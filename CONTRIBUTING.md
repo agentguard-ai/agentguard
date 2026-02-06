@@ -1,17 +1,17 @@
-# Contributing to AgentGuard SDK
+# Contributing to TealTiger SDK
 
-First off, thank you for considering contributing to AgentGuard SDK! It's people like you that make AgentGuard such a great tool for securing AI agents.
+First off, thank you for considering contributing to TealTiger SDK! It's people like you that make TealTiger such a great tool for securing AI agents.
 
 ## 🌟 Ways to Contribute
 
-There are many ways to contribute to AgentGuard SDK:
+There are many ways to contribute to TealTiger SDK:
 
 - 🐛 **Report bugs** - Help us identify and fix issues
 - 💡 **Suggest features** - Share ideas for new functionality
 - 📝 **Improve documentation** - Help others understand and use the SDK
 - 🔧 **Submit pull requests** - Contribute code improvements
 - 💬 **Answer questions** - Help other users in discussions
-- 🎨 **Share examples** - Show how you're using AgentGuard
+- 🎨 **Share examples** - Show how you're using TealTiger
 
 ## 🚀 Getting Started
 
@@ -30,13 +30,13 @@ There are many ways to contribute to AgentGuard SDK:
 
 2. **Clone your fork**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/agentguard-sdk.git
-   cd agentguard-sdk
+   git clone https://github.com/YOUR_USERNAME/tealtiger.git
+   cd tealtiger
    ```
 
 3. **Add upstream remote**
    ```bash
-   git remote add upstream https://github.com/agentguard-ai/agentguard-sdk.git
+   git remote add upstream https://github.com/agentguard-ai/tealtiger.git
    ```
 
 4. **Install dependencies**
@@ -122,7 +122,7 @@ git push origin feature/your-feature-name
 
 ### 6. Create a Pull Request
 
-1. Go to the [AgentGuard SDK repository](https://github.com/agentguard-ai/agentguard-sdk)
+1. Go to the [TealTiger repository](https://github.com/agentguard-ai/tealtiger)
 2. Click "New Pull Request"
 3. Select your fork and branch
 4. Fill out the PR template
@@ -172,11 +172,11 @@ Before submitting, ensure:
 Example test structure:
 
 ```typescript
-describe('AgentGuard', () => {
+describe('TealTiger', () => {
   describe('executeTool', () => {
     it('should execute tool successfully with valid parameters', async () => {
       // Arrange
-      const guard = new AgentGuard(config);
+      const guard = new TealTiger(config);
       
       // Act
       const result = await guard.executeTool('test-tool', params);
@@ -188,7 +188,7 @@ describe('AgentGuard', () => {
 
     it('should throw error when API key is invalid', async () => {
       // Arrange
-      const guard = new AgentGuard({ ...config, apiKey: 'invalid' });
+      const guard = new TealTiger({ ...config, apiKey: 'invalid' });
       
       // Act & Assert
       await expect(
@@ -206,7 +206,7 @@ describe('AgentGuard', () => {
 npm test
 
 # Run specific test file
-npm test -- AgentGuard.test.ts
+npm test -- TealTiger.test.ts
 
 # Run tests in watch mode
 npm run test:watch
@@ -298,7 +298,7 @@ A clear description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Initialize AgentGuard with '...'
+1. Initialize TealTiger with '...'
 2. Call executeTool with '...'
 3. See error
 
@@ -311,7 +311,7 @@ What actually happened.
 **Environment**
 - OS: [e.g., macOS 13.0]
 - Node.js version: [e.g., 18.0.0]
-- AgentGuard SDK version: [e.g., 0.1.1]
+- TealTiger SDK version: [e.g., 1.0.0]
 
 **Additional context**
 Any other relevant information.
@@ -385,20 +385,20 @@ Violations may result in:
 2. Temporary ban
 3. Permanent ban
 
-Report violations to: agentguard@proton.me
+Report violations to the repository maintainers via GitHub.
 
 ## 🏆 Recognition
 
 Contributors will be:
-- Listed in our [Contributors](https://github.com/agentguard-ai/agentguard-sdk/graphs/contributors) page
+- Listed in our [Contributors](https://github.com/agentguard-ai/tealtiger/graphs/contributors) page
 - Mentioned in release notes for significant contributions
 - Invited to our contributors Discord channel (coming soon)
 
 ## 📞 Getting Help
 
-- **Questions?** Open a [Discussion](https://github.com/agentguard-ai/agentguard-sdk/discussions)
-- **Bug?** Open an [Issue](https://github.com/agentguard-ai/agentguard-sdk/issues)
-- **Security?** Email agentguard@proton.me
+- **Questions?** Open a [Discussion](https://github.com/agentguard-ai/tealtiger/discussions)
+- **Bug?** Open an [Issue](https://github.com/agentguard-ai/tealtiger/issues)
+- **Security?** See [SECURITY.md](SECURITY.md) for reporting security vulnerabilities
 
 ## 📄 License
 
@@ -406,4 +406,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to AgentGuard SDK! 🎉
+Thank you for contributing to TealTiger SDK! 🎉
