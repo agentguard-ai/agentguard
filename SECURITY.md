@@ -10,7 +10,9 @@ Security is our top priority. We take all security vulnerabilities seriously.
 
 Instead, please report them via email to:
 
-**support@tealtiger.co.in**
+**Please use GitHub Security Advisories to report vulnerabilities:**
+
+https://github.com/agentguard-ai/tealtiger/security/advisories/new
 
 ### What to Include
 
@@ -227,8 +229,7 @@ We recognize security researchers who help us improve:
 
 ## 📞 Contact
 
-- **Security Issues**: support@tealtiger.co.in
-- **General Questions**: support@tealtiger.co.in
+- **Security Issues**: Use [GitHub Security Advisories](https://github.com/agentguard-ai/tealtiger/security/advisories/new)
 - **GitHub**: [agentguard-ai/tealtiger](https://github.com/agentguard-ai/tealtiger)
 
 ## 📄 Disclosure Policy
