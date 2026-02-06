@@ -127,7 +127,7 @@ response = await client.chat.create(
 
 ## 📚 Documentation
 
-- **[TypeScript SDK](https://www.npmjs.com/package/tealtiger)** - Full TypeScript documentation on NPM
+- **[TypeScript SDK](https://github.com/agentguard-ai/tealtiger-typescript)** - Full TypeScript documentation
 - **[Python SDK](https://github.com/agentguard-ai/tealtiger-python)** - Full Python documentation
 - **[Examples](./examples/)** - Working code examples
 
