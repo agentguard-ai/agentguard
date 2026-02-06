@@ -10,6 +10,9 @@ build/
 # Test coverage
 coverage/
 .nyc_output/
+htmlcov/
+.coverage
+.hypothesis/
 
 # Environment variables
 .env
@@ -40,3 +43,89 @@ temp/
 # OS files
 Thumbs.db
 .DS_Store
+
+# Internal documentation and planning (SENSITIVE - DO NOT COMMIT)
+agentguard-internal-docs/
+*-INTERNAL-*.md
+*-STRATEGY.md
+*-PLAN.md
+*-PROGRESS-*.md
+*-STATUS*.md
+*-SUMMARY.md
+*-CHECKLIST*.md
+*-COMPLETE*.md
+DAILY-*.md
+WEEK-*.md
+PHASE-*.md
+LAUNCH-*.md
+PUBLISH-*.md
+RELEASE-*.md
+DEPLOY-*.md
+MARKETING-*.md
+SOCIAL-MEDIA-*.md
+BLOGGING-*.md
+BLOG-POST-*.md
+COMPETITIVE-*.md
+PRODUCT-*.md
+PROJECT-*.md
+DEVELOPMENT-*.md
+PYPI-*.md
+PYTHON-SDK-*.md
+GITHUB-*.md
+REPOSITORY-*.md
+CLEANUP-*.md
+AUDIT-*.md
+DISCOVERY-*.md
+POSITIONING-*.md
+REAL-*.md
+REALISTIC-*.md
+NEXT-STEPS-*.md
+TOMORROW-*.md
+URGENT-*.md
+FIX-*.md
+CREATE-*.md
+COPY-*.md
+RESEARCH-*.md
+DEVTO-*.md
+COVER-*.md
+CONFIDENTIAL-*.md
+QUICK-*.md
+PRE-*.md
+POST-*.md
+FINAL-*.md
+DAY-*.md
+HYBRID-*.md
+CONTENT-CALENDAR*.md
+COMPLETE-*.md
+PUBLIC-FILES-ONLY.md
+Document.txt
+
+# Internal scripts
+cleanup-*.bat
+copy-*.bat
+final-*.bat
+remove-*.bat
+update-*.bat
+push-examples.bat
+push-examples.sh
+CLEANUP-ACTION-REQUIRED.txt
+
+# Old/deprecated folders
+agentguard/
+agentguard-landing/
+agent-guard-sdk-public/
+test-deprecated/
+test-install/
+tealtiger/
+
+# Database files
+database/
+
+# Docker files (if not using Docker)
+docker-compose*.yml
+
+# Postman collections (if sensitive)
+postman/
+
+# Internal source (if this is just a monorepo wrapper)
+src/
