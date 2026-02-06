@@ -103,6 +103,7 @@ PUBLIC-FILES-ONLY.md
 Document.txt
 
 # Internal scripts
+scripts/
 cleanup-*.bat
 copy-*.bat
 final-*.bat
