@@ -1,0 +1,6 @@
+[submodule "packages/tealtiger-python"]
+	path = packages/tealtiger-python
+	url = https://github.com/agentguard-ai/tealtiger-python.git
+[submodule "packages/tealtiger-sdk"]
+	path = packages/tealtiger-sdk
+	url = https://github.com/agentguard-ai/tealtiger-typescript.git

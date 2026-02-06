@@ -27,9 +27,12 @@ pip install tealtiger
 ### For Contributors (Clone & Develop)
 
 ```bash
-# Clone the repository
-git clone https://github.com/agentguard-ai/tealtiger.git
+# Clone the repository with submodules
+git clone --recurse-submodules https://github.com/agentguard-ai/tealtiger.git
 cd tealtiger
+
+# If you already cloned without --recurse-submodules, initialize them:
+git submodule update --init --recursive
 
 # TypeScript SDK
 cd packages/tealtiger-sdk
