@@ -1,10 +1,20 @@
-# TealTiger - AI Security & Cost Control Platform
-
-[![npm version](https://badge.fury.io/js/tealtiger.svg)](https://www.npmjs.com/package/tealtiger)
-[![PyPI version](https://badge.fury.io/py/tealtiger.svg)](https://pypi.org/project/tealtiger/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-**Secure your AI. Control your costs.**
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/logo/tealtiger-logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset=".github/logo/tealtiger-logo-light.png">
+    <img alt="TealTiger Logo" src=".github/logo/tealtiger-logo-light.png" width="200">
+  </picture>
+  
+  # TealTiger
+  
+  **AI Security & Cost Control Platform**
+  
+  [![npm version](https://badge.fury.io/js/tealtiger.svg)](https://www.npmjs.com/package/tealtiger)
+  [![PyPI version](https://badge.fury.io/py/tealtiger.svg)](https://pypi.org/project/tealtiger/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  
+  **Secure your AI. Control your costs.**
+</div>
 
 Drop-in SDKs that add security guardrails and cost tracking to your AI applications. Works with OpenAI, Anthropic, and Azure OpenAI.
 
