@@ -18,6 +18,8 @@
 
 Drop-in SDKs that add security guardrails and cost tracking to your AI applications. Works with OpenAI, Anthropic, and Azure OpenAI.
 
+> 📖 **[Read the introduction blog post](https://dev.to/nagasatish_chilakamarti_2/introducing-tealtiger-ai-security-cost-control-made-simple-4lma)** to learn more about TealTiger!
+
 ---
 
 ## 🚀 Quick Start
@@ -140,6 +142,7 @@ response = await client.chat.create(
 
 ## 📚 Documentation
 
+- **[Introduction Blog Post](https://dev.to/nagasatish_chilakamarti_2/introducing-tealtiger-ai-security-cost-control-made-simple-4lma)** - Learn about TealTiger
 - **[TypeScript SDK](https://github.com/agentguard-ai/tealtiger-typescript)** - Full TypeScript documentation
 - **[Python SDK](https://github.com/agentguard-ai/tealtiger-python)** - Full Python documentation
 - **[Examples](./examples/)** - Working code examples
@@ -230,8 +233,7 @@ Security is our top priority. If you discover a security vulnerability, please s
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/agentguard-ai/tealtiger/issues)
-- **Email**: support@tealtiger.co.in
-- **Website**: [tealtiger.co.in](https://tealtiger.co.in)
+- **Discussions**: [GitHub Discussions](https://github.com/agentguard-ai/tealtiger/discussions)
 
 ---
 
