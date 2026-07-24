@@ -111,6 +111,8 @@ src/
 !dashboard/governance-feed/src/**
 !packages/tealtiger-ai-sdk/src/
 !packages/tealtiger-ai-sdk/src/**
+!packages/tealtiger-contracts/python/src/
+!packages/tealtiger-contracts/python/src/**
 
 # Postman collections
 postman/

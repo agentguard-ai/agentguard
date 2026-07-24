@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tealtiger.ai/schemas/contracts/1.0.0/action.schema.json",
+  "title": "Action",
+  "description": "A consequential action an agent intends to perform. Parameters are represented by a digest rather than embedded payload data.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "action_id",
+    "agent_id",
+    "action_kind",
+    "tool_name",
+    "params_hash",
+    "reversibility_class",
+    "timestamp_ms",
+    "contract_version"
+  ],
+  "properties": {
+    "action_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this action intent."
+    },
+    "agent_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for the agent requesting the action."
+    },
+    "action_kind": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Producer-defined action category, such as TOOL_CALL, API_REQUEST, or STATE_MUTATION."
+    },
+    "tool_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical tool or target operation name."
+    },
+    "params_hash": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque digest of the canonicalized action parameters, including any algorithm prefix chosen by the producer."
+    },
+    "reversibility_class": {
+      "$ref": "#/$defs/reversibilityClass"
+    },
+    "timestamp_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds, constrained to the JavaScript safe-integer range."
+    },
+    "contract_version": {
+      "$ref": "#/$defs/contractVersion"
+    }
+  },
+  "$defs": {
+    "contractVersion": {
+      "type": "string",
+      "pattern": "^1\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "Semantic contract version. This package supports major version 1 and emits 1.0.0."
+    },
+    "reversibilityClass": {
+      "type": "string",
+      "enum": [
+        "read_only",
+        "reversible",
+        "externally_reversible",
+        "irreversible"
+      ],
+      "description": "Design-time action reversibility classification aligned with OWASP AISVS C9.2.3."
+    }
+  }
+}

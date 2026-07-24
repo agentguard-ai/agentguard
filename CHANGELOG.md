@@ -2,6 +2,32 @@
 
 All notable changes to TealTiger are documented in this file.
 
+## [1.4.0] — 2026-07-09
+
+### Added
+
+- **`observe(client)`** — Zero-config proxy wrapping for 12 LLM providers (OpenAI, Anthropic, Gemini, Bedrock, Azure OpenAI, Cohere, Mistral, DeepSeek, Groq, xAI, Together, HF-TGI)
+- **Automatic Cost Tracking** — Per-request, per-session, per-agent cost accumulation across all providers
+- **Behavioral Baseline** — Statistical profiling (P50/P95/P99 latency, token distribution, cost patterns) built from first 100 requests
+- **PII Detection (REPORT_ONLY)** — Passive PII scanning without blocking in observe mode
+- **`freeze()` / `unfreeze()`** — Instant kill switch to halt any agent immediately, zero policy required
+- **Governance Dashboard** — Redesigned Overview page with light content area, color-coded KPI cards, defense pipeline flow, canary alerts, agent matrix, cost savings, model routing, protocol governance panels
+- **Widget Error Isolation** — Each dashboard panel renders independently; single API failure never cascades
+
+### Changed
+
+- `ObserveCostSummary` type renamed from `CostSummary` (in observe module) to avoid conflict with cost module's `CostSummary`
+- Integration packages dependency bumped to `tealtiger>=1.4.0`
+- Dashboard API demo stubs updated with `/api/v1/costs/velocity`, `/api/v1/costs/budget-forecast` endpoints
+- Pipeline flow API response updated to include `tokenRange` and `metrics` per stage
+
+### Fixed
+
+- TypeScript SDK duplicate `CostSummary` export causing compile error
+- Unused `SupportedProvider` import in `provider-detector.ts`
+- Dashboard `/costs` page crash when `totalSaved` field missing from API response
+
+
 ## [1.3.0] — 2026-05-18
 
 ### Added

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tealtiger.ai/schemas/contracts/1.0.0/approval.schema.json",
+  "title": "Approval",
+  "description": "A time-bounded approval bound to one exact action and policy digest. An approval satisfies a gate; it does not lower any governance floor.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "approval_id",
+    "decision_id",
+    "action_hash",
+    "policy_digest",
+    "approver_id",
+    "tenant_id",
+    "nonce",
+    "issued_at_ms",
+    "expires_at_ms",
+    "scope",
+    "contract_version"
+  ],
+  "properties": {
+    "approval_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this approval."
+    },
+    "decision_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the REFER decision this approval addresses."
+    },
+    "action_hash": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque digest binding the approval to the exact canonical Action."
+    },
+    "policy_digest": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque digest binding the approval to the evaluated policy artifact."
+    },
+    "approver_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identity of the approver."
+    },
+    "tenant_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Tenant boundary within which the approval is valid."
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique replay-resistant nonce."
+    },
+    "issued_at_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix issue timestamp in milliseconds."
+    },
+    "expires_at_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix expiry timestamp in milliseconds. Consumers must reject expired approvals."
+    },
+    "scope": {
+      "const": "EXACT_ACTION",
+      "description": "Version 1 approvals are always scoped to exactly one action hash."
+    },
+    "contract_version": {
+      "$ref": "#/$defs/contractVersion"
+    }
+  },
+  "$defs": {
+    "contractVersion": {
+      "type": "string",
+      "pattern": "^1\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "Semantic contract version. This package supports major version 1 and emits 1.0.0."
+    }
+  }
+}
