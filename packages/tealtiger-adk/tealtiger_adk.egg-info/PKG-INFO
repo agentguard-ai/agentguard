@@ -1,0 +1,203 @@
+Metadata-Version: 2.4
+Name: tealtiger-adk
+Version: 0.1.0
+Summary: Deterministic governance callbacks for Google Agent Development Kit (ADK) — policy enforcement, PII detection, cost tracking, and audit evidence.
+Author-email: TealTiger <feedback@tealtiger.ai>
+License: Apache-2.0
+Project-URL: Homepage, https://github.com/agentguard-ai/tealtiger
+Project-URL: Documentation, https://docs.tealtiger.ai/integrations/google-adk
+Project-URL: Repository, https://github.com/agentguard-ai/tealtiger/tree/main/packages/tealtiger-adk
+Project-URL: Issues, https://github.com/agentguard-ai/tealtiger/issues
+Keywords: google-adk,tealtiger,governance,ai-agents,security,guardrails,gemini
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Security
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: tealtiger>=1.1.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21; extra == "dev"
+Requires-Dist: google-adk>=0.1.0; extra == "dev"
+Dynamic: license-file
+
+# tealtiger-adk
+
+**Deterministic governance callbacks for [Google Agent Development Kit (ADK)](https://github.com/google/adk-python)** — policy enforcement, PII detection, cost tracking, and audit evidence for Gemini-powered agents.
+
+[![PyPI](https://img.shields.io/pypi/v/tealtiger-adk)](https://pypi.org/project/tealtiger-adk/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
+
+Part of the [TealTiger](https://tealtiger.ai) ecosystem — deterministic AI agent governance.
+
+---
+
+## Features
+
+- 🛡️ **PII Detection** — Block SSN, credit cards, emails, phone numbers, IP addresses in tool arguments
+- 🔑 **Secret Detection** — Prevent API keys (OpenAI, GitHub, AWS, Google, Groq) from leaking through tools
+- 💰 **Cost Tracking** — Per-session budget limits with automatic enforcement
+- 🔧 **Tool Allowlisting** — Restrict which tools agents can call (supports wildcards)
+- ❄️ **Kill Switch** — Instantly freeze/unfreeze an agent's tool access
+- 📋 **Audit Trail** — Complete decision log with correlation IDs, timestamps, and risk scores
+- ⚡ **Sub-millisecond** — Deterministic evaluation, no LLM in the governance path
+
+## Installation
+
+```bash
+pip install tealtiger-adk
+```
+
+## Quick Start
+
+```python
+from google.adk import Agent
+from tealtiger_adk import TealTigerCallback
+
+# Create governance callback
+governance = TealTigerCallback(
+    policies=[
+        {"type": "pii_block", "categories": ["ssn", "credit_card", "email"]},
+        {"type": "cost_limit", "max_per_session": 5.00},
+        {"type": "tool_allowlist", "allowed": ["google_search", "code_*"]},
+        {"type": "secret_detection"},
+    ],
+    mode="ENFORCE",  # OBSERVE | MONITOR | ENFORCE
+)
+
+# Attach to ADK agent
+agent = Agent(
+    model="gemini-2.0-flash",
+    name="research_agent",
+    tools=[google_search, code_execution],
+    before_tool_callback=governance.before_tool,
+    after_tool_callback=governance.after_tool,
+)
+
+# Run your agent normally — governance is transparent
+response = agent.run("Find the latest AI safety research papers")
+
+# Inspect governance decisions
+print(f"Total decisions: {len(governance.decisions)}")
+print(f"Denied: {governance.deny_count}")
+print(f"Cost tracked: ${governance.total_cost:.4f}")
+```
+
+## Governance Modes
+
+| Mode | Behavior |
+|------|----------|
+| `OBSERVE` | Log decisions only — never blocks tool calls |
+| `MONITOR` | Log decisions with warnings — never blocks |
+| `ENFORCE` | Log decisions AND block denied tool calls |
+
+## Policy Types
+
+### PII Detection
+
+```python
+{"type": "pii_block", "categories": ["ssn", "credit_card", "email", "phone", "ip_address"]}
+```
+
+Scans tool arguments for PII patterns. In ENFORCE mode, blocks the tool call and returns a governance denial message to the agent.
+
+### Cost Limits
+
+```python
+{"type": "cost_limit", "max_per_session": 10.00}
+```
+
+Tracks cumulative cost per session. Blocks further tool calls once the budget is exhausted.
+
+### Tool Allowlisting
+
+```python
+{"type": "tool_allowlist", "allowed": ["google_search", "code_*", "read_file"]}
+```
+
+Only allows tools matching the allowlist. Supports wildcard patterns (`code_*` matches `code_execution`, `code_review`, etc.).
+
+### Secret Detection
+
+```python
+{"type": "secret_detection"}
+```
+
+Detects API keys and tokens (OpenAI `sk-*`, GitHub `ghp_*`, AWS `AKIA*`, Google `AIza*`, Groq `gsk_*`) in tool arguments.
+
+## Kill Switch
+
+```python
+# Emergency freeze — blocks ALL tool calls regardless of policy
+governance.freeze()
+
+# Resume normal governance
+governance.unfreeze()
+
+# Check status
+print(governance.is_frozen)  # True/False
+```
+
+## Decision Audit Trail
+
+Every governance evaluation produces a structured decision:
+
+```python
+{
+    "correlation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "timestamp_ms": 1720000000000.0,
+    "action": "DENY",
+    "mode": "ENFORCE",
+    "tool_name": "send_email",
+    "agent_id": "adk-agent-a1b2c3d4",
+    "reason_codes": ["PII_DETECTED:ssn"],
+    "risk_score": 90,
+    "evaluation_time_ms": 0.042,
+    "cost_tracked": 0.0,
+    "cumulative_cost": 0.008,
+}
+```
+
+## Integration with TealTiger Ecosystem
+
+`tealtiger-adk` works standalone, but also integrates with the full TealTiger platform:
+
+```python
+from tealtiger_adk import TealTigerCallback
+
+# Stream decisions to your observability stack
+def send_to_dashboard(decision):
+    # Forward to TealTiger Dashboard, Langfuse, AgentOps, etc.
+    requests.post("https://your-dashboard/api/decisions", json=decision)
+
+governance = TealTigerCallback(
+    policies=[...],
+    mode="ENFORCE",
+    on_decision=send_to_dashboard,
+)
+```
+
+## Requirements
+
+- Python 3.10+
+- `tealtiger >= 1.1.0`
+- `google-adk >= 0.1.0` (for running agents)
+
+## Links
+
+- 📖 [TealTiger Documentation](https://docs.tealtiger.ai)
+- 🐙 [GitHub](https://github.com/agentguard-ai/tealtiger)
+- 📦 [PyPI](https://pypi.org/project/tealtiger-adk/)
+- 🌐 [tealtiger.ai](https://tealtiger.ai)
+
+## License
+
+Apache 2.0 — see [LICENSE](LICENSE).
