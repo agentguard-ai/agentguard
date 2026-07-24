@@ -1,0 +1,50 @@
+{
+  "name": "tealtiger-copilotkit",
+  "version": "0.1.1",
+  "description": "Deterministic governance middleware for CopilotKit — action authorization, PII scanning, cost budgets, and structured audit trail",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/ --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "copilotkit",
+    "governance",
+    "tealtiger",
+    "pii",
+    "security",
+    "audit",
+    "middleware",
+    "ai-safety",
+    "cost-tracking"
+  ],
+  "author": "TealTiger <team@tealtiger.ai>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentguard-ai/tealtiger",
+    "directory": "packages/tealtiger-copilotkit"
+  },
+  "peerDependencies": {
+    "@copilotkit/runtime": ">=1.0.0 <2.0.0"
+  },
+  "devDependencies": {
+    "@copilotkit/runtime": "^1.8.0",
+    "typescript": "^5.5.0",
+    "tsup": "^8.0.0",
+    "vitest": "^2.0.0",
+    "eslint": "^9.0.0"
+  }
+}
