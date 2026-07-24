@@ -44,7 +44,7 @@
     "@copilotkit/runtime": "^1.8.0",
     "typescript": "^5.5.0",
     "tsup": "^8.0.0",
-    "vitest": "^2.0.0",
-    "eslint": "^9.0.0"
+    "vitest": "^4.1.10",
+    "eslint": "^10.7.0"
   }
 }
