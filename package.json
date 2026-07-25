@@ -46,7 +46,7 @@
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "lucide-react": "^1.26.0",
-    "react": "^19.2.7",
+    "react": "^19.2.8",
     "react-dom": "^19.2.7",
     "react-window": "^1.8.11",
     "ts-node": "^10.9.2",
