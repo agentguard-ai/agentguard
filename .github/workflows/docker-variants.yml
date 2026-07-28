@@ -36,7 +36,7 @@ jobs:
             tags: "tealtigeradmin/tealtiger-python:${{ github.event.inputs.version }}-sidecar,tealtigeradmin/tealtiger-python:sidecar,ghcr.io/agentguard-ai/tealtiger-python:${{ github.event.inputs.version }}-sidecar,ghcr.io/agentguard-ai/tealtiger-python:sidecar"
       fail-fast: false
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
 
@@ -78,7 +78,7 @@ jobs:
             tags: "tealtigeradmin/tealtiger-typescript:${{ github.event.inputs.version }}-governance,tealtigeradmin/tealtiger-typescript:governance,ghcr.io/agentguard-ai/tealtiger-typescript:${{ github.event.inputs.version }}-governance,ghcr.io/agentguard-ai/tealtiger-typescript:governance"
       fail-fast: false
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
 
