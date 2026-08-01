@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tealtiger-openhands"
+version = "0.1.0"
+description = "Deterministic governance hooks for OpenHands — file access control, command allowlisting, secret scanning, cost budgets, and structured audit evidence."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+authors = [
+    {name = "TealTiger", email = "feedback@tealtiger.ai"}
+]
+keywords = ["openhands", "tealtiger", "governance", "ai-agents", "security", "guardrails", "hooks", "audit"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "tealtiger>=1.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "hypothesis>=6.0",
+]
+
+[project.scripts]
+tealtiger-openhands-hook = "tealtiger_openhands.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/agentguard-ai/tealtiger"
+Documentation = "https://docs.tealtiger.ai/integrations/openhands"
+Repository = "https://github.com/agentguard-ai/tealtiger"
+Issues = "https://github.com/agentguard-ai/tealtiger/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["tealtiger_openhands*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
