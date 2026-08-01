@@ -84,28 +84,28 @@ export class TealTiger implements INodeType {
 				const promptInjection = this.getNodeParameter('promptInjection', itemIndex) as boolean;
 				const contentModeration = this.getNodeParameter('contentModeration', itemIndex) as boolean;
 
-				const client = new TealOpenAI({ 
+				const config: any = { 
 					apiKey: credentials.apiKey as string,
-					guardrails: { 
-						piiDetection,
-						promptInjection,
-						contentModeration
-					}
-				} as any);
+					enableGuardrails: true,
+					enableCostTracking: true
+				};
+				const client: any = new TealOpenAI(config);
 				
-				// @ts-ignore
 				const res = await client.chat.completions.create({
 					model,
 					messages: [{ role: 'user', content }]
 				});
 
-				const decision = res.security?.decision ?? 'ALLOW';
+				const decision = (res.security as any)?.guardrailResult?.decision ?? (res.security as any)?.decision ?? 'ALLOW';
 
 				const newItem = {
 					json: {
-						decision,
-						content: res.choices[0]?.message?.content,
-						securityInfo: res.security
+						...items[itemIndex].json,
+						tealTiger: {
+							decision,
+							content: res.choices[0]?.message?.content,
+							securityInfo: res.security
+						}
 					}
 				};
 
@@ -116,7 +116,12 @@ export class TealTiger implements INodeType {
 				}
 			} catch (error: any) {
 				if (this.continueOnFail()) {
-					blockedData.push({ json: { error: error.message }});
+					blockedData.push({ 
+						json: { 
+							...items[itemIndex].json,
+							error: error.message 
+						}
+					});
 					continue;
 				}
 				throw new NodeOperationError(this.getNode(), error, { itemIndex });

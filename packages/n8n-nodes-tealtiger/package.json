@@ -10,9 +10,9 @@
   "author": "TealTiger Team",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/nodes/TealTiger && cp src/nodes/TealTiger/tealtiger.svg dist/nodes/TealTiger/",
     "dev": "tsc --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No tests specified for now\" && exit 0"
   },
   "files": [
     "dist"
