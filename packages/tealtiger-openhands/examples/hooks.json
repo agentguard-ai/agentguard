@@ -1,0 +1,13 @@
+{
+  "pre_tool_use": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "command": "tealtiger-openhands-hook --config .openhands/governance.yml",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}

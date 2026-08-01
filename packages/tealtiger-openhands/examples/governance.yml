@@ -1,0 +1,81 @@
+# TealTiger Governance Policy for OpenHands
+# Place this file at: .openhands/governance.yml
+
+mode: ENFORCE  # ENFORCE | MONITOR | OBSERVE
+
+# File access control
+file_policy:
+  read_allowlist:
+    - "src/**"
+    - "tests/**"
+    - "docs/**"
+    - "*.md"
+    - "*.txt"
+    - "*.toml"
+    - "*.cfg"
+    - "*.json"
+    - "*.yml"
+    - "*.yaml"
+  read_denylist:
+    - ".env*"
+    - "**/*.pem"
+    - "**/*secret*"
+    - ".ssh/**"
+    - "**/.aws/credentials"
+  write_allowlist:
+    - "src/**"
+    - "tests/**"
+    - "docs/**"
+  write_denylist:
+    - ".git/hooks/**"
+    - "*.exe"
+    - "/etc/**"
+    - ".github/workflows/**"
+
+# Command execution control
+command_policy:
+  allowlist:
+    - python
+    - pytest
+    - pip
+    - git
+    - cat
+    - ls
+    - grep
+    - find
+    - head
+    - tail
+    - wc
+    - sort
+    - echo
+    - mkdir
+    - touch
+    - cp
+    - mv
+  denylist:
+    - "rm -rf /"
+    - "rm -rf ~"
+    - "DROP TABLE"
+    - "DROP DATABASE"
+    - "> /dev/sda"
+    - "mkfs"
+    - "dd if="
+  block_network_access: true
+
+# Secret scanning on file writes
+secret_scan:
+  enabled: true
+  action: block
+  categories:
+    - api_key
+    - password
+    - token
+    - private_key
+    - aws_key
+    - connection_string
+    - github_token
+
+# Cost and iteration budgets
+budget:
+  per_session_usd: 5.00
+  max_iterations: 100
