@@ -50,7 +50,7 @@ Siguiente: [Inicio rápido completo](#-inicio-rápido) y [ejemplos](../../exampl
 
 ---
 
-## 🚀 Inicio Rápido (Getting Started)
+## 🚀 Inicio Rápido
 
 ### TypeScript
 
@@ -88,6 +88,7 @@ pip install tealtiger
 ```
 
 ```python
+import os
 from tealtiger import TealOpenAI
 
 client = TealOpenAI(
