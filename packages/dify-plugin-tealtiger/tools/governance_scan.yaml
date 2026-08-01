@@ -34,3 +34,11 @@ parameters:
     default: true
     label:
       en_US: Enable Content Moderation
+  - name: budget
+    type: number
+    required: false
+    default: 0
+    label:
+      en_US: Enforce Maximum Budget ($)
+    human_description:
+      en_US: Fails the evaluation if the budget is exceeded (0 means no limit).
