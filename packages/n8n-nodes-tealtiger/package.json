@@ -1,0 +1,39 @@
+{
+  "name": "n8n-nodes-tealtiger",
+  "version": "0.1.0",
+  "description": "TealTiger governance node for n8n",
+  "keywords": [
+    "n8ncommunity-node-package"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://tealtiger.co.in",
+  "author": "TealTiger Team",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/TealTigerApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/TealTiger/TealTiger.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.6",
+    "@types/request-promise-native": "~1.0.15",
+    "n8n-core": "*",
+    "n8n-workflow": "*",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "tealtiger": "latest"
+  }
+}
