@@ -1,0 +1,43 @@
+{
+  "name": "@tealtiger/contracts",
+  "version": "1.0.0",
+  "description": "Versioned cross-language governance contracts for TealTiger",
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js"
+    },
+    "./schemas/*": "./schemas/*",
+    "./vectors/conformance": "./vectors/conformance.json"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "vectors",
+    "README.md",
+    "COMPATIBILITY.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p typescript/tsconfig.json",
+    "generate": "node scripts/generate-typescript.mjs",
+    "generate:check": "node scripts/generate-typescript.mjs --check",
+    "test": "node --test -r ts-node/register typescript/tests/conformance.test.ts",
+    "verify": "npm run generate:check && npm run build && npm test"
+  },
+  "dependencies": {
+    "ajv": "8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "json-schema-to-typescript": "15.0.4",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.3"
+  }
+}

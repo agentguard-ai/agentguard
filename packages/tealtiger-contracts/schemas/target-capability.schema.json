@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tealtiger.ai/schemas/contracts/1.0.0/target-capability.schema.json",
+  "title": "TargetCapability",
+  "description": "A connector's explicit capability declaration. Unsupported policy mappings must be reported rather than silently approximated.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "connector_id",
+    "idempotent",
+    "reversibility_class",
+    "supports_approval",
+    "supports_precondition",
+    "supports_reconciliation",
+    "supports_compensation",
+    "policy_mapping_fidelity",
+    "contract_version"
+  ],
+  "properties": {
+    "connector_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for the connector implementation."
+    },
+    "idempotent": {
+      "type": "boolean",
+      "description": "Whether retrying the same execution identity is safe and returns the prior result."
+    },
+    "reversibility_class": {
+      "$ref": "#/$defs/reversibilityClass"
+    },
+    "supports_approval": {
+      "type": "boolean",
+      "description": "Whether the connector can enforce exact-action approval before execution."
+    },
+    "supports_precondition": {
+      "type": "boolean",
+      "description": "Whether the connector can enforce target-state preconditions."
+    },
+    "supports_reconciliation": {
+      "type": "boolean",
+      "description": "Whether the connector can reconcile execution against native target evidence."
+    },
+    "supports_compensation": {
+      "type": "boolean",
+      "description": "Whether the connector exposes an explicit compensation operation."
+    },
+    "policy_mapping_fidelity": {
+      "type": "string",
+      "enum": [
+        "EXACT",
+        "CONSERVATIVE",
+        "OBSERVE_ONLY",
+        "UNSUPPORTED"
+      ],
+      "description": "How faithfully TealTiger policy semantics map to the target's native controls."
+    },
+    "contract_version": {
+      "$ref": "#/$defs/contractVersion"
+    }
+  },
+  "$defs": {
+    "contractVersion": {
+      "type": "string",
+      "pattern": "^1\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "Semantic contract version. This package supports major version 1 and emits 1.0.0."
+    },
+    "reversibilityClass": {
+      "type": "string",
+      "enum": [
+        "read_only",
+        "reversible",
+        "externally_reversible",
+        "irreversible"
+      ],
+      "description": "Highest reversibility class the connector can safely represent for the declared operation surface."
+    }
+  }
+}

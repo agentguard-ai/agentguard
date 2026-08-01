@@ -39,7 +39,7 @@ classifiers = [
 ]
 dependencies = [
     "langchain>=1.0.0",
-    "tealtiger>=1.3.0",
+    "tealtiger>=1.4.0",
 ]
 
 [project.optional-dependencies]

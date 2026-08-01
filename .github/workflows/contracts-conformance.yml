@@ -1,0 +1,68 @@
+name: Contracts Conformance
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/tealtiger-contracts/**'
+      - '.github/workflows/contracts-conformance.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/tealtiger-contracts/**'
+      - '.github/workflows/contracts-conformance.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contracts-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cross-language-contracts:
+    name: TypeScript and Python vectors
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: packages/tealtiger-contracts/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: packages/tealtiger-contracts/python/pyproject.toml
+
+      - name: Install TypeScript dependencies
+        working-directory: packages/tealtiger-contracts
+        run: npm ci
+
+      - name: Install Python package and generator
+        run: python -m pip install -e "packages/tealtiger-contracts/python[dev]"
+
+      - name: Verify generated TypeScript and run vectors
+        working-directory: packages/tealtiger-contracts
+        run: npm run verify
+
+      - name: Verify generated Python
+        working-directory: packages/tealtiger-contracts
+        run: python scripts/generate_python.py --check
+
+      - name: Lint and type-check Python
+        working-directory: packages/tealtiger-contracts
+        run: |
+          python -m ruff check scripts/generate_python.py python/src python/tests
+          python -m mypy scripts/generate_python.py python/src
+
+      - name: Run Python vectors
+        working-directory: packages/tealtiger-contracts
+        run: python -m pytest python/tests
