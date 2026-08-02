@@ -1,5 +1,7 @@
 # TealTiger
 
+🌐 [Español](docs/translations/README.es.md)
+
 <div align="center">
 
 <img src=".github/logo/tealtiger-logo-256.png" alt="TealTiger Logo" width="200">
