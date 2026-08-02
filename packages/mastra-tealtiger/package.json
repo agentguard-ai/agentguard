@@ -1,0 +1,48 @@
+{
+  "name": "@tealtiger/mastra",
+  "version": "0.1.0",
+  "description": "TealTiger governance middleware for the Mastra TypeScript agent framework",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "mastra",
+    "mastra-ai",
+    "governance",
+    "security",
+    "tealtiger",
+    "middleware",
+    "agent"
+  ],
+  "author": "TealTiger Team",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "@mastra/core": "^0.3.0",
+    "tealtiger-sdk": ">=1.4.0"
+  },
+  "devDependencies": {
+    "@mastra/core": "^0.3.0",
+    "tealtiger-sdk": "file:../tealtiger-sdk",
+    "typescript": "^5.0.0",
+    "tsup": "^8.0.0",
+    "vitest": "^4.1.0",
+    "@types/node": "^20.0.0"
+  }
+}
