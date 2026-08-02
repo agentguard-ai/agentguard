@@ -1,0 +1,583 @@
+{
+  "description": "Shared TealTiger governance contract conformance vectors. TypeScript and Python must produce the expected validity result and preserve valid instances exactly across a JSON round trip.",
+  "contract_package_version": "1.0.0",
+  "vectors": [
+    {
+      "id": "action-minimal-valid",
+      "contract": "Action",
+      "expected": "valid",
+      "instance": {
+        "action_id": "act-001",
+        "agent_id": "agent-research-01",
+        "action_kind": "TOOL_CALL",
+        "tool_name": "github.merge_pull_request",
+        "params_hash": "sha256:14f9021c8a9bd27325a9ec6e5258c7ee43c3b86fb5db963ca6f777bb7a837a11",
+        "reversibility_class": "externally_reversible",
+        "timestamp_ms": 1784246400000,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "action-forward-field-valid",
+      "contract": "Action",
+      "expected": "valid",
+      "instance": {
+        "action_id": "act-002",
+        "agent_id": "agent-support-02",
+        "action_kind": "STATE_MUTATION",
+        "tool_name": "support.issue_credit",
+        "params_hash": "digest:credit-params-v1",
+        "reversibility_class": "reversible",
+        "timestamp_ms": 1784246400100,
+        "contract_version": "1.1.0",
+        "future_extension": {
+          "resource_id": "ticket-42",
+          "producer_revision": 2
+        }
+      }
+    },
+    {
+      "id": "action-missing-agent-invalid",
+      "contract": "Action",
+      "expected": "invalid",
+      "expected_error_path": "agent_id",
+      "instance": {
+        "action_id": "act-003",
+        "action_kind": "TOOL_CALL",
+        "tool_name": "search.query",
+        "params_hash": "digest:query",
+        "reversibility_class": "read_only",
+        "timestamp_ms": 1784246400200,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "action-unknown-reversibility-invalid",
+      "contract": "Action",
+      "expected": "invalid",
+      "expected_error_path": "reversibility_class",
+      "instance": {
+        "action_id": "act-004",
+        "agent_id": "agent-04",
+        "action_kind": "TOOL_CALL",
+        "tool_name": "database.drop_table",
+        "params_hash": "digest:drop",
+        "reversibility_class": "unclassified",
+        "timestamp_ms": 1784246400300,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "action-major-version-invalid",
+      "contract": "Action",
+      "expected": "invalid",
+      "expected_error_path": "contract_version",
+      "instance": {
+        "action_id": "act-005",
+        "agent_id": "agent-05",
+        "action_kind": "TOOL_CALL",
+        "tool_name": "search.query",
+        "params_hash": "digest:query-v2",
+        "reversibility_class": "read_only",
+        "timestamp_ms": 1784246400400,
+        "contract_version": "2.0.0"
+      }
+    },
+    {
+      "id": "decision-allow-valid",
+      "contract": "Decision",
+      "expected": "valid",
+      "instance": {
+        "decision_id": "dec-001",
+        "action_id": "act-001",
+        "agent_id": "agent-research-01",
+        "action": "ALLOW",
+        "gate_level": "AUDIT",
+        "decision_source": "local_policy",
+        "policy_digest": "sha256:4ce1877f26d01bc9bc6b104203b0bb85298a83d687c6665352171cbf031f9863",
+        "reason_codes": [
+          "POLICY_MATCH",
+          "AUDIT_OBLIGATION_SATISFIED"
+        ],
+        "risk_score": 24.5,
+        "reversibility_class": "reversible",
+        "evaluation_time_ms": 1.75,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "decision-refer-forward-field-valid",
+      "contract": "Decision",
+      "expected": "valid",
+      "instance": {
+        "decision_id": "dec-002",
+        "action_id": "act-002",
+        "agent_id": "agent-support-02",
+        "action": "REFER",
+        "gate_level": "REFER",
+        "decision_source": "reversibility_floor",
+        "policy_digest": "sha256:policy-002",
+        "reason_codes": [
+          "APPROVAL_REQUIRED"
+        ],
+        "risk_score": 61,
+        "reversibility_class": "externally_reversible",
+        "evaluation_time_ms": 2,
+        "contract_version": "1.2.0",
+        "future_obligations": [
+          "TARGET_PREFLIGHT"
+        ]
+      }
+    },
+    {
+      "id": "decision-monitor-outcome-invalid",
+      "contract": "Decision",
+      "expected": "invalid",
+      "expected_error_path": "action",
+      "instance": {
+        "decision_id": "dec-003",
+        "action_id": "act-003",
+        "agent_id": "agent-03",
+        "action": "MONITOR",
+        "gate_level": "AUDIT",
+        "decision_source": "legacy_mode",
+        "policy_digest": "digest:policy",
+        "reason_codes": [
+          "LEGACY_MONITOR"
+        ],
+        "risk_score": 5,
+        "reversibility_class": "read_only",
+        "evaluation_time_ms": 1,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "decision-risk-out-of-range-invalid",
+      "contract": "Decision",
+      "expected": "invalid",
+      "expected_error_path": "risk_score",
+      "instance": {
+        "decision_id": "dec-004",
+        "action_id": "act-004",
+        "agent_id": "agent-04",
+        "action": "DENY",
+        "gate_level": "BLOCK",
+        "decision_source": "freeze_rule",
+        "policy_digest": "digest:policy",
+        "reason_codes": [
+          "FROZEN"
+        ],
+        "risk_score": 101,
+        "reversibility_class": "irreversible",
+        "evaluation_time_ms": 0.5,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "decision-empty-reasons-invalid",
+      "contract": "Decision",
+      "expected": "invalid",
+      "expected_error_path": "reason_codes",
+      "instance": {
+        "decision_id": "dec-005",
+        "action_id": "act-005",
+        "agent_id": "agent-05",
+        "action": "ALLOW",
+        "gate_level": "AUTO",
+        "decision_source": "local_policy",
+        "policy_digest": "digest:policy",
+        "reason_codes": [],
+        "risk_score": 0,
+        "reversibility_class": "read_only",
+        "evaluation_time_ms": 0.25,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "decision-string-risk-invalid",
+      "contract": "Decision",
+      "expected": "invalid",
+      "expected_error_path": "risk_score",
+      "instance": {
+        "decision_id": "dec-005b",
+        "action_id": "act-005b",
+        "agent_id": "agent-05b",
+        "action": "ALLOW",
+        "gate_level": "AUTO",
+        "decision_source": "local_policy",
+        "policy_digest": "digest:policy",
+        "reason_codes": [
+          "POLICY_MATCH"
+        ],
+        "risk_score": "12",
+        "reversibility_class": "read_only",
+        "evaluation_time_ms": 0.25,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "decision-duplicate-reasons-invalid",
+      "contract": "Decision",
+      "expected": "invalid",
+      "expected_error_path": "reason_codes",
+      "instance": {
+        "decision_id": "dec-005c",
+        "action_id": "act-005c",
+        "agent_id": "agent-05c",
+        "action": "REFER",
+        "gate_level": "REFER",
+        "decision_source": "local_policy",
+        "policy_digest": "digest:policy",
+        "reason_codes": [
+          "APPROVAL_REQUIRED",
+          "APPROVAL_REQUIRED"
+        ],
+        "risk_score": 50,
+        "reversibility_class": "reversible",
+        "evaluation_time_ms": 0.75,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "decision-major-version-invalid",
+      "contract": "Decision",
+      "expected": "invalid",
+      "expected_error_path": "contract_version",
+      "instance": {
+        "decision_id": "dec-006",
+        "action_id": "act-006",
+        "agent_id": "agent-06",
+        "action": "DENY",
+        "gate_level": "BLOCK",
+        "decision_source": "local_policy",
+        "policy_digest": "digest:policy",
+        "reason_codes": [
+          "POLICY_DENY"
+        ],
+        "risk_score": 90,
+        "reversibility_class": "irreversible",
+        "evaluation_time_ms": 1,
+        "contract_version": "2.0.0"
+      }
+    },
+    {
+      "id": "approval-exact-action-valid",
+      "contract": "Approval",
+      "expected": "valid",
+      "instance": {
+        "approval_id": "apr-001",
+        "decision_id": "dec-002",
+        "action_hash": "sha256:8f713cf49dc1855d5411b61c9191ca67025e3abf905ece41485054a09a99570d",
+        "policy_digest": "sha256:policy-002",
+        "approver_id": "operator@example.com",
+        "tenant_id": "tenant-acme",
+        "nonce": "nonce-001-unique",
+        "issued_at_ms": 1784246401000,
+        "expires_at_ms": 1784246701000,
+        "scope": "EXACT_ACTION",
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "approval-forward-field-valid",
+      "contract": "Approval",
+      "expected": "valid",
+      "instance": {
+        "approval_id": "apr-002",
+        "decision_id": "dec-007",
+        "action_hash": "digest:action-007",
+        "policy_digest": "digest:policy-007",
+        "approver_id": "team-security",
+        "tenant_id": "tenant-beta",
+        "nonce": "nonce-002-unique",
+        "issued_at_ms": 1784246402000,
+        "expires_at_ms": 1784247002000,
+        "scope": "EXACT_ACTION",
+        "contract_version": "1.1.0",
+        "future_identity_context": {
+          "authentication_strength": "phishing_resistant"
+        }
+      }
+    },
+    {
+      "id": "approval-missing-tenant-invalid",
+      "contract": "Approval",
+      "expected": "invalid",
+      "expected_error_path": "tenant_id",
+      "instance": {
+        "approval_id": "apr-003",
+        "decision_id": "dec-003",
+        "action_hash": "digest:action",
+        "policy_digest": "digest:policy",
+        "approver_id": "operator-03",
+        "nonce": "nonce-003",
+        "issued_at_ms": 1784246403000,
+        "expires_at_ms": 1784247003000,
+        "scope": "EXACT_ACTION",
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "approval-broad-scope-invalid",
+      "contract": "Approval",
+      "expected": "invalid",
+      "expected_error_path": "scope",
+      "instance": {
+        "approval_id": "apr-004",
+        "decision_id": "dec-004",
+        "action_hash": "digest:action",
+        "policy_digest": "digest:policy",
+        "approver_id": "operator-04",
+        "tenant_id": "tenant-04",
+        "nonce": "nonce-004",
+        "issued_at_ms": 1784246404000,
+        "expires_at_ms": 1784247004000,
+        "scope": "ALL_ACTIONS",
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "approval-fractional-timestamp-invalid",
+      "contract": "Approval",
+      "expected": "invalid",
+      "expected_error_path": "issued_at_ms",
+      "instance": {
+        "approval_id": "apr-005",
+        "decision_id": "dec-005",
+        "action_hash": "digest:action",
+        "policy_digest": "digest:policy",
+        "approver_id": "operator-05",
+        "tenant_id": "tenant-05",
+        "nonce": "nonce-005",
+        "issued_at_ms": 1784246405000.5,
+        "expires_at_ms": 1784247005000,
+        "scope": "EXACT_ACTION",
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "approval-major-version-invalid",
+      "contract": "Approval",
+      "expected": "invalid",
+      "expected_error_path": "contract_version",
+      "instance": {
+        "approval_id": "apr-006",
+        "decision_id": "dec-006",
+        "action_hash": "digest:action",
+        "policy_digest": "digest:policy",
+        "approver_id": "operator-06",
+        "tenant_id": "tenant-06",
+        "nonce": "nonce-006",
+        "issued_at_ms": 1784246406000,
+        "expires_at_ms": 1784247006000,
+        "scope": "EXACT_ACTION",
+        "contract_version": "3.0.0"
+      }
+    },
+    {
+      "id": "receipt-blocked-valid",
+      "contract": "ExecutionReceipt",
+      "expected": "valid",
+      "instance": {
+        "receipt_id": "rcpt-001",
+        "decision_id": "dec-004",
+        "execution_outcome": "blocked",
+        "reconciliation_status": "not_required",
+        "timestamp_ms": 1784246407000,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "receipt-executed-forward-field-valid",
+      "contract": "ExecutionReceipt",
+      "expected": "valid",
+      "instance": {
+        "receipt_id": "rcpt-002",
+        "decision_id": "dec-002",
+        "approval_id": "apr-001",
+        "execution_outcome": "executed",
+        "target_event_id": "github-audit-789",
+        "reconciliation_status": "confirmed",
+        "timestamp_ms": 1784246408000,
+        "contract_version": "1.3.0",
+        "future_evidence": {
+          "target_digest": "digest:event-789"
+        }
+      }
+    },
+    {
+      "id": "receipt-unknown-outcome-invalid",
+      "contract": "ExecutionReceipt",
+      "expected": "invalid",
+      "expected_error_path": "execution_outcome",
+      "instance": {
+        "receipt_id": "rcpt-003",
+        "decision_id": "dec-003",
+        "execution_outcome": "failed",
+        "reconciliation_status": "unavailable",
+        "timestamp_ms": 1784246409000,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "receipt-missing-reconciliation-invalid",
+      "contract": "ExecutionReceipt",
+      "expected": "invalid",
+      "expected_error_path": "reconciliation_status",
+      "instance": {
+        "receipt_id": "rcpt-004",
+        "decision_id": "dec-004",
+        "execution_outcome": "pending",
+        "timestamp_ms": 1784246410000,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "receipt-null-approval-invalid",
+      "contract": "ExecutionReceipt",
+      "expected": "invalid",
+      "expected_error_path": "approval_id",
+      "instance": {
+        "receipt_id": "rcpt-004a",
+        "decision_id": "dec-004a",
+        "approval_id": null,
+        "execution_outcome": "blocked",
+        "reconciliation_status": "not_required",
+        "timestamp_ms": 1784246410500,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "receipt-null-target-event-invalid",
+      "contract": "ExecutionReceipt",
+      "expected": "invalid",
+      "expected_error_path": "target_event_id",
+      "instance": {
+        "receipt_id": "rcpt-004b",
+        "decision_id": "dec-004b",
+        "execution_outcome": "pending",
+        "target_event_id": null,
+        "reconciliation_status": "awaiting_target",
+        "timestamp_ms": 1784246410750,
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "receipt-major-version-invalid",
+      "contract": "ExecutionReceipt",
+      "expected": "invalid",
+      "expected_error_path": "contract_version",
+      "instance": {
+        "receipt_id": "rcpt-005",
+        "decision_id": "dec-005",
+        "execution_outcome": "compensated",
+        "reconciliation_status": "confirmed",
+        "timestamp_ms": 1784246411000,
+        "contract_version": "2.0.0"
+      }
+    },
+    {
+      "id": "target-capability-full-valid",
+      "contract": "TargetCapability",
+      "expected": "valid",
+      "instance": {
+        "connector_id": "github-app-v1",
+        "idempotent": true,
+        "reversibility_class": "externally_reversible",
+        "supports_approval": true,
+        "supports_precondition": true,
+        "supports_reconciliation": true,
+        "supports_compensation": false,
+        "policy_mapping_fidelity": "CONSERVATIVE",
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "target-capability-forward-field-valid",
+      "contract": "TargetCapability",
+      "expected": "valid",
+      "instance": {
+        "connector_id": "shopify-admin-v1",
+        "idempotent": true,
+        "reversibility_class": "reversible",
+        "supports_approval": true,
+        "supports_precondition": true,
+        "supports_reconciliation": true,
+        "supports_compensation": true,
+        "policy_mapping_fidelity": "EXACT",
+        "contract_version": "1.4.0",
+        "future_operations": [
+          "refund",
+          "cancel_fulfillment"
+        ]
+      }
+    },
+    {
+      "id": "target-capability-invalid-fidelity",
+      "contract": "TargetCapability",
+      "expected": "invalid",
+      "expected_error_path": "policy_mapping_fidelity",
+      "instance": {
+        "connector_id": "connector-03",
+        "idempotent": false,
+        "reversibility_class": "irreversible",
+        "supports_approval": false,
+        "supports_precondition": false,
+        "supports_reconciliation": false,
+        "supports_compensation": false,
+        "policy_mapping_fidelity": "BEST_EFFORT",
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "target-capability-missing-idempotency-invalid",
+      "contract": "TargetCapability",
+      "expected": "invalid",
+      "expected_error_path": "idempotent",
+      "instance": {
+        "connector_id": "connector-04",
+        "reversibility_class": "read_only",
+        "supports_approval": false,
+        "supports_precondition": true,
+        "supports_reconciliation": true,
+        "supports_compensation": false,
+        "policy_mapping_fidelity": "OBSERVE_ONLY",
+        "contract_version": "1.0.0"
+      }
+    },
+    {
+      "id": "target-capability-major-version-invalid",
+      "contract": "TargetCapability",
+      "expected": "invalid",
+      "expected_error_path": "contract_version",
+      "instance": {
+        "connector_id": "connector-05",
+        "idempotent": false,
+        "reversibility_class": "irreversible",
+        "supports_approval": false,
+        "supports_precondition": false,
+        "supports_reconciliation": false,
+        "supports_compensation": false,
+        "policy_mapping_fidelity": "UNSUPPORTED",
+        "contract_version": "2.0.0"
+      }
+    },
+    {
+      "id": "target-capability-string-boolean-invalid",
+      "contract": "TargetCapability",
+      "expected": "invalid",
+      "expected_error_path": "idempotent",
+      "instance": {
+        "connector_id": "connector-06",
+        "idempotent": "true",
+        "reversibility_class": "reversible",
+        "supports_approval": true,
+        "supports_precondition": true,
+        "supports_reconciliation": true,
+        "supports_compensation": true,
+        "policy_mapping_fidelity": "EXACT",
+        "contract_version": "1.0.0"
+      }
+    }
+  ]
+}

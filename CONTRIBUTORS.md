@@ -22,6 +22,8 @@ Thank you to everyone who has contributed to TealTiger! 🐯
 - **[@turfin-logic](https://github.com/turfin-logic)** — 1-Line Observe Mode Component for Haystack (`TealTigerObserver` with passthrough telemetry, cost tracking, PII/injection detection) — PR #343
 - **[@blut-agent](https://github.com/blut-agent)** — Policy validation CLI subcommand (`tealtiger validate`) with JSON/YAML support, schema checking, and JSON output for CI — PR #14 (tealtiger-python-prod)
 - **[@stark256-spec](https://github.com/stark256-spec)** *(continued)* — Haystack pipeline security scan GitHub Action (AST-based, zero dependencies, 16 tests) — PR #315
+- **[@Ehtasham-Yasin](https://github.com/Ehtasham-Yasin)** - Add freeze registry property tests - PR #31
+
 
 ## Core Team
 
