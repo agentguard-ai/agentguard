@@ -6,7 +6,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { TealOpenAI } from 'tealtiger';
+import { TealGuard } from 'tealtiger';
 
 export class TealTiger implements INodeType {
 	description: INodeTypeDescription = {
@@ -21,8 +21,8 @@ export class TealTiger implements INodeType {
 			name: 'TealTiger',
 		},
 		inputs: ['main'],
-		outputs: ['main', 'main'], // output 0: approved, output 1: blocked
-		outputNames: ['Approved', 'Blocked/Needs Review'],
+		outputs: ['main', 'main', 'main'],
+		outputNames: ['Approved', 'Blocked', 'Needs Review'],
 		credentials: [
 			{
 				name: 'tealTigerApi',
@@ -72,6 +72,7 @@ export class TealTiger implements INodeType {
 		const items = this.getInputData();
 		const approvedData: INodeExecutionData[] = [];
 		const blockedData: INodeExecutionData[] = [];
+		const needsReviewData: INodeExecutionData[] = [];
 
 		const credentials = await this.getCredentials('tealTigerApi');
 
@@ -85,34 +86,36 @@ export class TealTiger implements INodeType {
 				const contentModeration = this.getNodeParameter('contentModeration', itemIndex) as boolean;
 
 				const config: any = { 
-					apiKey: credentials.apiKey as string,
-					enableGuardrails: true,
-					enableCostTracking: true
+					guardrails: {
+						pre: {
+							pii: piiDetection,
+							injection: promptInjection,
+							content: contentModeration
+						}
+					}
 				};
-				const client: any = new TealOpenAI(config);
+				process.env.TEALTIGER_API_KEY = credentials.apiKey as string;
+				const guard = new (TealGuard as any)(config);
 				
-				const res = await client.chat.completions.create({
-					model,
-					messages: [{ role: 'user', content }]
-				});
-
-				const decision = (res.security as any)?.guardrailResult?.decision ?? (res.security as any)?.decision ?? 'ALLOW';
+				const decisionObj = await guard.check({ content });
+				const decision = decisionObj.action || 'ALLOW';
 
 				const newItem = {
 					json: {
 						...items[itemIndex].json,
 						tealTiger: {
 							decision,
-							content: res.choices[0]?.message?.content,
-							securityInfo: res.security
+							securityInfo: decisionObj
 						}
 					}
 				};
 
 				if (decision === 'ALLOW') {
 					approvedData.push(newItem);
-				} else {
+				} else if (decision === 'DENY' || decision === 'BLOCK') {
 					blockedData.push(newItem);
+				} else {
+					needsReviewData.push(newItem);
 				}
 			} catch (error: any) {
 				if (this.continueOnFail()) {
@@ -128,6 +131,6 @@ export class TealTiger implements INodeType {
 			}
 		}
 
-		return [approvedData, blockedData];
+		return [approvedData, blockedData, needsReviewData];
 	}
 }
