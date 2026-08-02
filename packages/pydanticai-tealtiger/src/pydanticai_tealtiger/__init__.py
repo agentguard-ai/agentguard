@@ -33,6 +33,7 @@ from pydanticai_tealtiger.guard import (
     ToolBaseline,
     ToolSummary,
 )
+from pydanticai_tealtiger.agent import GovernedAgent, GovernanceConfig
 
 __all__ = [
     "TealTigerGuard",
@@ -43,4 +44,6 @@ __all__ = [
     "PIIFinding",
     "ToolSummary",
     "ToolBaseline",
+    "GovernedAgent",
+    "GovernanceConfig",
 ]
