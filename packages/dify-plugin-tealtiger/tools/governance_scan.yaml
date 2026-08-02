@@ -34,6 +34,12 @@ parameters:
     default: true
     label:
       en_US: Enable Content Moderation
+  - name: secret_detection
+    type: boolean
+    required: false
+    default: true
+    label:
+      en_US: Enable Secret Detection
   - name: budget
     type: number
     required: false

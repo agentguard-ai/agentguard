@@ -17,6 +17,7 @@ class TealTigerGovernanceTool(Tool):
         pii_detection = tool_parameters.get("pii_detection", True)
         prompt_injection = tool_parameters.get("prompt_injection", True)
         content_moderation = tool_parameters.get("content_moderation", True)
+        secret_detection = tool_parameters.get("secret_detection", True)
         # Note: Budget is retrieved but not enforced by TealGuard as it is a local scan.
         
         # Initialize TealTiger client (TealGuard for deterministic scanning)
@@ -30,7 +31,7 @@ class TealTigerGovernanceTool(Tool):
                         "pii": pii_detection,
                         "injection": prompt_injection,
                         "content": content_moderation,
-                        "secrets": True  # Wired secret scanning as requested
+                        "secrets": secret_detection
                     }
                 }
             )

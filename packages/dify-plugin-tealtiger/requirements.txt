@@ -1,1 +1,1 @@
-tealtiger>=0.1.0
+tealtiger>=1.4.0
