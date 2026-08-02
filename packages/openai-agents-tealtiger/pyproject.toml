@@ -1,0 +1,85 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openai-agents-tealtiger"
+version = "0.1.0"
+description = "Deterministic governance middleware for OpenAI Agents SDK — policy enforcement, PII detection, cost tracking, and structured audit evidence for tool-use."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "TealTiger Team", email = "reachout@tealtiger.ai"},
+]
+keywords = [
+    "openai",
+    "agents",
+    "governance",
+    "security",
+    "ai-agents",
+    "guardrails",
+    "policy",
+    "tealtiger",
+    "llm",
+    "tool-use",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = [
+    "openai-agents>=0.1.0",
+    "tealtiger>=1.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "hypothesis>=6.0.0",
+    "mypy>=1.5.0",
+    "ruff>=0.4.0",
+]
+
+[project.urls]
+Homepage = "https://tealtiger.ai"
+Documentation = "https://docs.tealtiger.ai/integrations/openai-agents"
+Repository = "https://github.com/agentguard-ai/tealtiger"
+Issues = "https://github.com/agentguard-ai/tealtiger/issues"
+Changelog = "https://github.com/agentguard-ai/tealtiger/blob/main/packages/openai-agents-tealtiger/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tealtiger"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=tealtiger.integrations.openai_agents --cov-report=term-missing"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "C", "B", "UP"]
+ignore = ["E501"]
