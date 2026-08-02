@@ -33,8 +33,6 @@ from pydanticai_tealtiger.guard import (
     ToolBaseline,
     ToolSummary,
 )
-from pydanticai_tealtiger.agent import GovernedAgent, GovernanceConfig
-
 __all__ = [
     "TealTigerGuard",
     "GovernanceDenyError",
@@ -47,3 +45,10 @@ __all__ = [
     "GovernedAgent",
     "GovernanceConfig",
 ]
+
+def __getattr__(name: str):
+    if name in {"GovernedAgent", "GovernanceConfig"}:
+        import importlib
+        agent_module = importlib.import_module("pydanticai_tealtiger.agent")
+        return getattr(agent_module, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
