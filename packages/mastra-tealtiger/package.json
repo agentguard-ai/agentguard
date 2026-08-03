@@ -1,5 +1,5 @@
 {
-  "name": "@tealtiger/mastra",
+  "name": "tealtiger-mastra",
   "version": "0.1.0",
   "description": "TealTiger governance middleware for the Mastra TypeScript agent framework",
   "main": "dist/index.js",

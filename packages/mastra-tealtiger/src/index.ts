@@ -1,4 +1,13 @@
-import { TealTigerClient, PolicyViolationError } from 'tealtiger-ai-sdk';
+import TealTigerClient from 'tealtiger-ai-sdk';
+
+class PolicyViolationError extends Error {
+  public decision: any;
+  constructor(message: string, decision: any) {
+    super(message);
+    this.name = 'PolicyViolationError';
+    this.decision = decision;
+  }
+}
 
 /**
  * Options for configuring TealTiger governance on a Mastra tool.
@@ -7,7 +16,7 @@ export interface GovernanceOptions {
   /** 
    * The initialized TealTiger client. 
    */
-  client: TealTigerClient;
+  client: InstanceType<typeof TealTigerClient>;
   
   /** 
    * Scan the tool's input arguments before execution. Default true.
