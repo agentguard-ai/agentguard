@@ -1,4 +1,4 @@
-import { TealTigerClient, PolicyViolationError } from 'tealtiger-sdk';
+import { TealTigerClient, PolicyViolationError } from 'tealtiger-ai-sdk';
 
 /**
  * Options for configuring TealTiger governance on a Mastra tool.
