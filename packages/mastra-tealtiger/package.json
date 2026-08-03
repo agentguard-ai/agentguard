@@ -35,11 +35,11 @@
   "license": "Apache-2.0",
   "peerDependencies": {
     "@mastra/core": "^0.3.0",
-    "tealtiger-ai-sdk": ">=1.4.0"
+    "tealtiger-ai-sdk": ">=0.1.0"
   },
   "devDependencies": {
     "@mastra/core": "^0.3.0",
-    "tealtiger-ai-sdk": ">=1.4.0",
+    "tealtiger-ai-sdk": ">=0.1.0",
     "typescript": "^5.0.0",
     "tsup": "^8.0.0",
     "vitest": "^4.1.0",
