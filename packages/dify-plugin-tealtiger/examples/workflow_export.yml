@@ -1,0 +1,72 @@
+app:
+  description: Example workflow demonstrating TealTiger governance gate.
+  icon: 🛡️
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: TealTiger Governance Workflow
+workflow:
+  features:
+    file_upload:
+      image:
+        enabled: false
+  graph:
+    edges:
+    - id: start_to_tealtiger
+      source: start
+      target: tealtiger_governance
+    - id: tealtiger_to_llm
+      source: tealtiger_governance
+      target: llm_generation
+      condition:
+        rules:
+          - variable: tealtiger_governance.decision
+            operator: equal
+            value: "ALLOW"
+    - id: tealtiger_to_end
+      source: tealtiger_governance
+      target: end_blocked
+      condition:
+        rules:
+          - variable: tealtiger_governance.decision
+            operator: equal
+            value: "DENY"
+    nodes:
+    - id: start
+      position:
+        x: 0
+        y: 0
+      type: start
+      data:
+        variables:
+        - name: user_input
+          type: string
+    - id: tealtiger_governance
+      position:
+        x: 300
+        y: 0
+      type: tool
+      data:
+        provider_id: tealtiger
+        provider_type: plugin
+        tool_name: governance_scan
+        tool_parameters:
+          content: '{{start.user_input}}'
+          pii_detection: true
+          prompt_injection: true
+          content_moderation: true
+          budget: 5.0
+    - id: llm_generation
+      position:
+        x: 600
+        y: -100
+      type: llm
+      data:
+        prompt: '{{start.user_input}}'
+    - id: end_blocked
+      position:
+        x: 600
+        y: 100
+      type: end
+      data:
+        outputs:
+          result: "Blocked by TealTiger policy."
