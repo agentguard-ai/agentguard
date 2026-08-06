@@ -1,0 +1,5 @@
+version: 0.0.1
+name: tealtiger
+author: TealTiger Team
+description: TealTiger governance and policy enforcement integration.
+type: tool

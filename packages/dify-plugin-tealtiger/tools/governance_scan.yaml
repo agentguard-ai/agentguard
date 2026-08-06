@@ -1,0 +1,50 @@
+identity:
+  name: governance_scan
+  author: TealTiger Team
+  label:
+    en_US: TealTiger Governance Scan
+description:
+  human:
+    en_US: Scans input text for PII, secrets, and policy violations. Returns an ALLOW or DENY decision with reason codes.
+  llm: A tool to scan text for PII, prompt injections, or policy violations.
+parameters:
+  - name: content
+    type: string
+    required: true
+    label:
+      en_US: Input Content
+    human_description:
+      en_US: The content to scan
+    llm_description: The input text to evaluate.
+  - name: pii_detection
+    type: boolean
+    required: false
+    default: true
+    label:
+      en_US: Enable PII Detection
+  - name: prompt_injection
+    type: boolean
+    required: false
+    default: true
+    label:
+      en_US: Enable Prompt Injection Prevention
+  - name: content_moderation
+    type: boolean
+    required: false
+    default: true
+    label:
+      en_US: Enable Content Moderation
+  - name: secret_detection
+    type: boolean
+    required: false
+    default: true
+    label:
+      en_US: Enable Secret Detection
+  - name: budget
+    type: number
+    required: false
+    default: 0
+    label:
+      en_US: Enforce Maximum Budget ($)
+    human_description:
+      en_US: Fails the evaluation if the budget is exceeded (0 means no limit).
