@@ -1,0 +1,46 @@
+# TealTiger Sidecar Configuration
+# Governance policies for the Future AGI webhook contract
+
+server:
+  port: 8080
+  read_timeout_ms: 5000
+  write_timeout_ms: 5000
+
+policies:
+  # Tool allowlist/denylist with glob matching
+  tool_control:
+    enabled: true
+    allowlist:
+      - "read_*"
+      - "search_*"
+      - "list_*"
+      - "get_*"
+    denylist:
+      - "exec_*"
+      - "shell_*"
+      - "rm_*"
+      - "delete_*"
+
+  # PII detection via regex
+  # Patterns: ssn, credit_card, email, phone
+  # Leave patterns empty to enable all
+  pii_detection:
+    enabled: true
+    patterns: []
+
+  # Secret detection via regex
+  # Patterns: api_key, password, bearer_token, token, private_key, aws_access_key_id, aws_secret_key
+  # Leave patterns empty to enable all
+  secret_detection:
+    enabled: true
+    patterns: []
+
+  # Cost budget tracking per session (agent_id)
+  cost_budget:
+    enabled: true
+    max_per_session: 5.00
+    per_request_cost: 0.01
+
+  # Agent kill switch
+  kill_switch:
+    enabled: true
