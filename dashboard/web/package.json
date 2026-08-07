@@ -26,7 +26,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.4.21",
     "jsdom": "^29.1.1",
-    "postcss": "^8.5.23",
+    "postcss": "^8.5.26",
     "tailwindcss": "^4.3.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"
