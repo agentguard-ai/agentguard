@@ -6,7 +6,7 @@ A lightweight Go sidecar that implements TealTiger governance policies, speaking
 
 - **Future AGI Contract**: POST `/evaluate` → `{pass, score, message, details}`
 - **Tool Control**: Allowlist/denylist with glob pattern matching
-- **PII Detection**: SSN, credit card, email, phone number regex scanning
+- **PII Detection**: SSN, credit card, email, phone number, IBAN, passport number regex scanning
 - **Secret Detection**: API keys, passwords, tokens, private keys, AWS credentials
 - **Cost Budget Tracking**: Per-session cumulative cost enforcement
 - **Agent Kill Switch**: Freeze/unfreeze agents via admin endpoints
