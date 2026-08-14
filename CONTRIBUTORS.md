@@ -23,6 +23,15 @@ Thank you to everyone who has contributed to TealTiger! 🐯
 - **[@blut-agent](https://github.com/blut-agent)** — Policy validation CLI subcommand (`tealtiger validate`) with JSON/YAML support, schema checking, and JSON output for CI — PR #14 (tealtiger-python-prod)
 - **[@stark256-spec](https://github.com/stark256-spec)** *(continued)* — Haystack pipeline security scan GitHub Action (AST-based, zero dependencies, 16 tests) — PR #315
 - **[@Ehtasham-Yasin](https://github.com/Ehtasham-Yasin)** - Add freeze registry property tests - PR #31
+- • [@lleonardo-franco](https://github.com/lleonardo-franco) (continued) — n8n community node governance integration (TealGuard, 3-way routing) — PR #424; Mastra TypeScript governance middleware (`withGovernance` wrapper) — PR #436; LangGraph conditional routing governance — PR #430; MLflow compliance tracking with SARIF export — PR #431; Anthropic Agent SDK governance middleware — PR #428; Open WebUI governance filter (inlet/outlet hooks + Valves) — PR #433
+• [@Shxnque](https://github.com/Shxnque) — KYC Agent deterministic decision engine (Quesen-shaped, SHA-256 audit proofs, policy versioning, 15 tests) — PR #453
+• [@li2631026381-alt](https://github.com/li2631026381-alt) — KYC Agent synthetic data generator (50 customer profiles, 20 sanctions, 10 PEP, 10 documents) — PR #450
+• [@nolanefe](https://github.com/nolanefe) — KYC Agent memory layer (assigned, in progress) — Issue #442
+• [@anchal284](https://github.com/anchal284) — KYC Agent documentation (assigned, in progress) — Issue #448
+• [@amanishimwe](https://github.com/amanishimwe) — Mistral pricing update + cost calculation tests — PR #24 (tealtiger-python-prod)
+• [@Mayur021](https://github.com/Mayur021) — RFC v1.5 reversibility axis proposal (OWASP AISVS C9.2.3/C9.2.4/C9.2.10 alignment) — Issue #387
+• [@CleanDev-Fix](continued)(https://github.com/CleanDev-Fix) (continued) — RFC v1.5 comprehensive technical review + P0 contracts implementation — Issue #387, PR #389
+
 
 
 ## Core Team
