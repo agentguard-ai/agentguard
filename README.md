@@ -60,6 +60,27 @@ Next: [full Quick Start](#-quick-start) and [examples](./examples).
 
 ---
 
+## Quickstart
+
+**Getting started in 5 minutes** — from `pip install` to a governed agent with PII blocking, tool allowlists, and JSON decision output. No API key required.
+
+```bash
+pip install tealtiger
+python examples/quickstart_governance.py
+```
+
+The tutorial covers:
+
+1. **Observe mode** — wrap an OpenAI client in one line (`observe(client)`)
+2. **PII policy** — block SSNs in tool arguments
+3. **Tool allowlist** — only allow `search` and `read_*`
+4. **Decision output** — structured JSON for every governance verdict
+5. **MONITOR vs ENFORCE** — log violations without blocking, then flip to block
+
+See the full walkthrough in [`docs/quickstart.md`](./docs/quickstart.md).
+
+---
+
 ## 🔭 observe() — Zero-Config Instrumentation (v1.4)
 
 One line adds cost tracking, audit logging, PII detection, and behavioral baselines to any LLM client. No config files, no policy definitions.
@@ -296,6 +317,7 @@ response = client.chat.completions.create(
 
 - [Why your AI agent needs a budget — cost governance for LLM apps](./docs/blog/cost-governance-for-llm-apps.md)
 - [OWASP Agentic Top 10 — practical defenses with TealTiger](./docs/blog/owasp-agentic-top-10-defenses.md)
+- [Getting Started in 5 Minutes](./docs/quickstart.md)
 - [Quick Start Guide](#-quick-start)
 - [Security Guardrails](#️-security-guardrails)
 - [Cost Governance](#-cost-governance)
