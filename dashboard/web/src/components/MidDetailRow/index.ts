@@ -1,0 +1,1 @@
+export { MidDetailRow } from './MidDetailRow';

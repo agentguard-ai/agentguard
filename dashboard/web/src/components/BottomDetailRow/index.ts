@@ -1,0 +1,1 @@
+export { BottomDetailRow } from './BottomDetailRow';

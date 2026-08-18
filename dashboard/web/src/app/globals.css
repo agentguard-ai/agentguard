@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg-primary: #0f172a;
+    --color-bg-secondary: #1e293b;
+    --color-bg-tertiary: #334155;
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #94a3b8;
+    --color-border: #334155;
+    --color-accent: #14b8a6;
+    --color-accent-hover: #0d9488;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+    --color-success: #22c55e;
+
+    /* Sidebar */
+    --sidebar-width: 240px;
+    --sidebar-collapsed-width: 64px;
+    --sidebar-bg: #0c1222;
+    --sidebar-border: #1e293b;
+
+    /* Panel cards */
+    --panel-border-radius: 12px;
+    --panel-padding: 20px;
+    --panel-border-opacity: 0.15;
+
+    /* Spacing */
+    --row-gap: 20px;
+    --content-padding: 24px;
+
+    /* KPI */
+    --kpi-trend-up: #22c55e;
+    --kpi-trend-down: #ef4444;
+  }
+
+  .light {
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f8fafc;
+    --color-bg-tertiary: #e2e8f0;
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #64748b;
+    --color-border: #e2e8f0;
+    --color-accent: #0d9488;
+    --color-accent-hover: #0f766e;
+    --color-danger: #dc2626;
+    --color-warning: #d97706;
+    --color-success: #16a34a;
+
+    /* Sidebar */
+    --sidebar-bg: #f1f5f9;
+    --sidebar-border: #e2e8f0;
+
+    /* KPI */
+    --kpi-trend-up: #16a34a;
+    --kpi-trend-down: #dc2626;
+  }
+
+  /* Light theme scoped to main content area (preserves dark sidebar) */
+  .content-area {
+    --color-bg-primary: #f8fafc;    /* bg-gray-50 */
+    --color-bg-secondary: #ffffff;   /* white cards */
+    --color-bg-tertiary: #e2e8f0;   /* muted fills */
+    --color-text-primary: #0f172a;   /* dark headings */
+    --color-text-secondary: #64748b; /* medium gray labels */
+    --color-border: #e2e8f0;        /* subtle borders */
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 shadow-sm;
+  }
+
+  /* Panel styling within light content area */
+  .content-area .panel {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-radius: var(--panel-border-radius);
+    padding: var(--panel-padding);
+  }
+
+  .panel-header {
+    @apply mb-3 flex items-center justify-between border-b border-[var(--color-border)] pb-2 text-sm font-semibold text-[var(--color-text-primary)];
+  }
+
+  .status-healthy {
+    @apply text-[var(--color-success)];
+  }
+
+  .status-degraded {
+    @apply text-[var(--color-warning)];
+  }
+
+  .status-critical {
+    @apply text-[var(--color-danger)];
+  }
+}
+
+/* ─── Focus Indicators (Accessibility) ────────────────────────────────────── */
+/* Visible focus indicators for all interactive elements.
+ * Minimum 2px outline with sufficient contrast per WCAG 2.1 AA (Requirement 15.5).
+ * Uses :focus-visible to only show on keyboard navigation, not mouse clicks.
+ */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Remove default outline since we're providing our own */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+html {
+  /* Ensure minimum 12px font size across all breakpoints (Requirement 9.5) */
+  font-size: max(12px, 1rem);
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Prevent horizontal scrollbar at any supported viewport width (Requirement 9.4) */
+  overflow-x: hidden;
+}
