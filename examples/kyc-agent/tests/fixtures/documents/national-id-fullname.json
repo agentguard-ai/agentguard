@@ -1,0 +1,12 @@
+{
+  "document_id": "DOC-T003",
+  "document_type": "national_id",
+  "is_synthetic": true,
+  "extracted_fields": {
+    "full_name": "Ada Q. Synthetic",
+    "date_of_birth": "1978-06-30",
+    "nationality": "ZZ",
+    "document_number": "NID-TEST-000003",
+    "document_expiry": "2030-06-30"
+  }
+}

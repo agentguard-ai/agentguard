@@ -35,10 +35,14 @@ from interfaces import (
 
 def _identity(confidence: float = 0.95) -> ExtractedIdentity:
     return ExtractedIdentity(
-        full_name="Ada Lovelace",
+        first_name="Ada",
+        last_name="Lovelace",
         date_of_birth="1980-05-14",
-        country="ZA",
+        nationality="ZA",
         document_type="passport",
+        document_number="ZZ-TEST-0001",
+        document_expiry="2031-01-01",
+        address="1 Synthetic Way, Testville, ZZ",
         confidence=confidence,
     )
 

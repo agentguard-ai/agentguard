@@ -1,0 +1,19 @@
+{
+  "document_id": "DOC-T002",
+  "type": "Driver's License",
+  "is_synthetic": true,
+  "extracted_fields": {
+    "given_name": "Karim",
+    "surname": "Fixture",
+    "dob": "1990/11/02",
+    "issuing_country": "zz",
+    "id_number": "DL-TEST-000002",
+    "expiry": "02 Nov 2031",
+    "residential_address": {
+      "line1": "22 Mock Street",
+      "city": "Sampletown",
+      "postal_code": "00002",
+      "country": "ZZ"
+    }
+  }
+}

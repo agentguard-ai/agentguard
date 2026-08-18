@@ -1,0 +1,20 @@
+{
+  "id": "CUS-T006",
+  "first_name": "Profile",
+  "last_name": "Shaped",
+  "date_of_birth": "1972-09-09",
+  "nationality": "ZZ",
+  "country_of_residence": "ZZ",
+  "occupation": "Synthetic Tester",
+  "is_synthetic": true,
+  "id_document": {
+    "type": "passport",
+    "number": "ZZ-TEST-000006",
+    "expiry": "2032-09-09",
+    "extracted_fields": {
+      "first_name": "Profile",
+      "last_name": "Shaped",
+      "address": "6 Fixture Avenue, Sampletown, ZZ 00006"
+    }
+  }
+}

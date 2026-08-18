@@ -1,12 +1,14 @@
 """KYC agent type interfaces.
 
-> **Scope note (from ../README.md):** `ExtractedIdentity`, `SanctionsResult`,
-> and `RiskAssessment` are minimal stubs that match the fields referenced
-> in the interface published on issue #441. They will be replaced by the
-> canonical types produced by sub-issues #438 / #439 / #440.
+> **Scope note (from ../README.md):** `SanctionsResult` and `RiskAssessment`
+> are minimal stubs that match the fields referenced in the interface
+> published on issue #441. They will be replaced by the canonical types
+> produced by sub-issues #439 / #440.
 >
-> `KYCDecision` is authored here per the #441 deliverables list and is the
-> canonical return type of `make_decision`.
+> `ExtractedIdentity` is **canonical** as of sub-issue #438 (document
+> extraction) and matches the interface published on that issue.
+> `KYCDecision` is canonical per #441 and is the return type of
+> `make_decision`.
 """
 from __future__ import annotations
 
@@ -14,22 +16,43 @@ from dataclasses import dataclass, field, asdict
 from typing import Any, Literal, Optional
 
 
-# ---------- STUBS (to be deleted when upstream types land) ----------
+# ---------- CANONICAL (owned by #438) ----------
 
 
 @dataclass(frozen=True)
 class ExtractedIdentity:
-    """Output of the Document Extraction Agent (sub-issue #438).
+    """Structured identity extracted from a customer document (#438).
 
-    Only the fields the Decision Agent needs to reason about are modelled
-    here. The real type will carry additional evidence and provenance.
+    Produced by ``agents.document_extractor.extract_identity``. Field names
+    and order match the interface published on issue #438.
+
+    ``confidence`` is the extractor's own confidence in [0.0, 1.0]. The
+    Decision Agent (#441) treats a confidence below its policy floor as an
+    escalation trigger, so extractors must not report 1.0 for a partially
+    recovered document.
     """
 
-    full_name: str
-    date_of_birth: str  # ISO 8601 date, e.g. "1980-05-14"
-    country: str        # ISO 3166-1 alpha-2, e.g. "ZA"
-    document_type: str  # e.g. "passport", "national_id", "drivers_license"
-    confidence: float   # extractor confidence in [0.0, 1.0]
+    first_name: str
+    last_name: str
+    date_of_birth: str      # ISO 8601 date, e.g. "1985-03-15"
+    nationality: str        # ISO 3166-1 alpha-2, e.g. "ZA"
+    document_type: str      # e.g. "passport", "national_id", "drivers_license"
+    document_number: str
+    document_expiry: str    # ISO 8601 date, e.g. "2029-01-01"
+    address: Optional[str] = None
+    confidence: float = 0.0
+
+    @property
+    def full_name(self) -> str:
+        """Convenience join. Not a dataclass field — excluded from hashing."""
+        return " ".join(part for part in (self.first_name, self.last_name) if part)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Canonical serialisable form (declaration order)."""
+        return asdict(self)
+
+
+# ---------- STUBS (to be deleted when upstream types land) ----------
 
 
 @dataclass(frozen=True)

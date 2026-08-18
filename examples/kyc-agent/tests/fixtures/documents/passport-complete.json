@@ -1,0 +1,14 @@
+{
+  "document_id": "DOC-T001",
+  "document_type": "passport",
+  "is_synthetic": true,
+  "extracted_fields": {
+    "first_name": "Jane",
+    "last_name": "Testcase",
+    "date_of_birth": "1985-03-15",
+    "nationality": "ZZ",
+    "document_number": "ZZ-TEST-000001",
+    "document_expiry": "2029-01-01",
+    "address": "1 Synthetic Way, Testville, ZZ 00001"
+  }
+}
