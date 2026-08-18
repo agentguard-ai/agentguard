@@ -286,7 +286,7 @@ def test_extracted_identity_feeds_make_decision():
     decision = _run(
         make_decision(
             identity,
-            SanctionsResult(status="clear"),
+            SanctionsResult(status="clear", confidence=0.94),
             RiskAssessment(risk_score=0.1, risk_band="low"),
         )
     )
@@ -299,7 +299,7 @@ def test_low_confidence_extraction_forces_escalation():
     decision = _run(
         make_decision(
             low,
-            SanctionsResult(status="clear"),
+            SanctionsResult(status="clear", confidence=0.94),
             RiskAssessment(risk_score=0.1, risk_band="low"),
         )
     )
