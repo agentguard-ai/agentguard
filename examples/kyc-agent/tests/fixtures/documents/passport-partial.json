@@ -1,0 +1,10 @@
+{
+  "document_id": "DOC-T004",
+  "document_type": "passport",
+  "is_synthetic": true,
+  "extracted_fields": {
+    "first_name": "Partial",
+    "last_name": "Scan",
+    "nationality": "ZZ"
+  }
+}

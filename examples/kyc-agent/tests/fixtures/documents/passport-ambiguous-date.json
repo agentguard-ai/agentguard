@@ -1,0 +1,13 @@
+{
+  "document_id": "DOC-T005",
+  "document_type": "passport",
+  "is_synthetic": true,
+  "extracted_fields": {
+    "first_name": "Ambi",
+    "last_name": "Guous",
+    "date_of_birth": "03/04/1985",
+    "nationality": "ZZ",
+    "document_number": "ZZ-TEST-000005",
+    "document_expiry": "2028-04-03"
+  }
+}

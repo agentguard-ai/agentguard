@@ -1,0 +1,15 @@
+{
+  "document_id": "DOC-T007",
+  "document_type": "passport",
+  "is_synthetic": true,
+  "extraction_confidence": 0.42,
+  "extracted_fields": {
+    "first_name": "Blurry",
+    "last_name": "Scan",
+    "date_of_birth": "1995-12-25",
+    "nationality": "ZZ",
+    "document_number": "ZZ-TEST-000007",
+    "document_expiry": "2027-12-25",
+    "address": "7 Glare Road, Sampletown, ZZ 00007"
+  }
+}
