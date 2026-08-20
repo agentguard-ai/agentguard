@@ -25,6 +25,7 @@ No LLM in the governance path. All policy evaluation is deterministic, adding <5
 
 from langchain_tealtiger.middleware import TealTigerMiddleware
 from langchain_tealtiger._types import (
+    GovernanceAction,
     GovernanceDecision,
     GovernanceMode,
     PolicyConfig,
@@ -34,6 +35,7 @@ from langchain_tealtiger._types import (
 __version__ = "0.1.0"
 __all__ = [
     "TealTigerMiddleware",
+    "GovernanceAction",
     "GovernanceDecision",
     "GovernanceMode",
     "PolicyConfig",

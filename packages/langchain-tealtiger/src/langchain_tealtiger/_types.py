@@ -26,6 +26,7 @@ class GovernanceAction(str, Enum):
     ALLOW = "ALLOW"
     DENY = "DENY"
     MODIFY = "MODIFY"
+    REDACT = "REDACT"
     PENDING = "PENDING"
 
 
@@ -109,6 +110,9 @@ class GovernanceDecision:
 
     metadata: Dict[str, Any] = field(default_factory=dict)
     """Additional metadata."""
+
+    redacted_content: str | None = None
+    """Content with PII removed, set only for `action == GovernanceAction.REDACT`."""
 
 
 @dataclass

@@ -10,6 +10,7 @@ from typing import Any, Dict
 from unittest.mock import MagicMock
 
 import pytest
+from langchain_core.messages import HumanMessage
 
 from langchain_tealtiger import TealTigerMiddleware, GovernanceMode
 from langchain_tealtiger._types import GovernanceAction
@@ -374,3 +375,153 @@ class TestMultiplePolicies:
 
         handler.assert_not_called()
         assert "TOOL_NOT_ALLOWED" in str(middleware.evidence[0].reason_codes)
+
+
+# ── Tests: Construction (regression for the otel_enabled bug) ────
+
+
+class TestConstruction:
+    def test_constructs_with_no_arguments(self) -> None:
+        # Previously raised TypeError unconditionally.
+        TealTigerMiddleware()
+
+    def test_constructs_with_otel_enabled(self) -> None:
+        TealTigerMiddleware(policies=[], otel_enabled=True)
+
+    def test_constructs_with_all_arguments(self) -> None:
+        TealTigerMiddleware(
+            policies=[{"type": "tool_allowlist", "tools": ["search"]}],
+            agent_id="test-agent",
+            mode="ENFORCE",
+            freeze_tools=["dangerous"],
+            otel_enabled=True,
+        )
+
+
+# ── Tests: wrap_tool_call ALLOW path (regression for record_tool_success) ──
+
+
+class TestWrapToolCallBookkeeping:
+    def test_allowed_call_does_not_raise(self) -> None:
+        """wrap_tool_call's ALLOW path previously raised AttributeError calling
+        the undefined GovernanceBridge.record_tool_success.
+        """
+        middleware = TealTigerMiddleware(
+            policies=[{"type": "tool_allowlist", "tools": ["search"]}]
+        )
+        middleware.before_agent({}, MagicMock())
+
+        result = middleware.wrap_tool_call(make_tool_request("search"), make_handler())
+        assert result.content == "tool result"
+
+    def test_failed_call_does_not_raise(self) -> None:
+        """The exception path previously raised AttributeError calling the
+        undefined GovernanceBridge.record_tool_failure.
+        """
+        middleware = TealTigerMiddleware(
+            policies=[{"type": "tool_allowlist", "tools": ["search"]}]
+        )
+        middleware.before_agent({}, MagicMock())
+
+        def failing_handler(_request: Any) -> Any:
+            raise RuntimeError("boom")
+
+        with pytest.raises(RuntimeError, match="boom"):
+            middleware.wrap_tool_call(make_tool_request("search"), failing_handler)
+
+
+class TestCircuitBreakerViaMiddleware:
+    def test_repeated_failures_open_the_breaker(self) -> None:
+        middleware = TealTigerMiddleware(
+            policies=[
+                {"type": "tool_allowlist", "tools": ["flaky_tool"]},
+                {"type": "circuit_breaker", "failure_threshold": 2},
+            ],
+        )
+        middleware.before_agent({}, MagicMock())
+
+        def failing_handler(_request: Any) -> Any:
+            raise RuntimeError("boom")
+
+        for _ in range(2):
+            with pytest.raises(RuntimeError):
+                middleware.wrap_tool_call(make_tool_request("flaky_tool"), failing_handler)
+
+        # Third call: circuit breaker is open, denied before the handler runs.
+        handler = make_handler()
+        result = middleware.wrap_tool_call(make_tool_request("flaky_tool"), handler)
+        handler.assert_not_called()
+        assert "[GOVERNANCE DENIED]" in result.content
+        assert "CIRCUIT_BREAKER_OPEN" in str(middleware.evidence[-1].reason_codes)
+
+
+# ── Tests: PII input defense (before_model) ───────────────────────
+
+
+def make_state(content: str) -> Dict[str, Any]:
+    return {"messages": [HumanMessage(content=content)]}
+
+
+class TestPIIInputDefense:
+    def test_blocks_pii_in_enforce_mode(self) -> None:
+        middleware = TealTigerMiddleware(
+            policies=[{"type": "pii", "action": "block"}], mode="ENFORCE"
+        )
+        middleware.before_agent({}, MagicMock())
+
+        state = make_state("My SSN is 123-45-6789")
+        result = middleware.before_model(state, MagicMock())
+
+        assert result is not None
+        assert result.get("governance_blocked") is True
+        assert "[GOVERNANCE BLOCKED]" in state["messages"][-1].content
+
+    def test_allows_clean_input(self) -> None:
+        middleware = TealTigerMiddleware(
+            policies=[{"type": "pii", "action": "block"}], mode="ENFORCE"
+        )
+        middleware.before_agent({}, MagicMock())
+
+        state = make_state("Please look up order #4821.")
+        result = middleware.before_model(state, MagicMock())
+
+        assert result is None
+        assert state["messages"][-1].content == "Please look up order #4821."
+
+    def test_redacts_pii_in_place(self) -> None:
+        middleware = TealTigerMiddleware(
+            policies=[{"type": "pii", "action": "redact"}], mode="ENFORCE"
+        )
+        middleware.before_agent({}, MagicMock())
+
+        state = make_state("My SSN is 123-45-6789")
+        result = middleware.before_model(state, MagicMock())
+
+        assert result == {"governance_redacted": True}
+        assert "123-45-6789" not in state["messages"][-1].content
+        assert "REDACTED_SSN" in state["messages"][-1].content
+
+    def test_monitor_mode_does_not_block(self) -> None:
+        middleware = TealTigerMiddleware(
+            policies=[{"type": "pii", "action": "block"}], mode="MONITOR"
+        )
+        middleware.before_agent({}, MagicMock())
+
+        state = make_state("My SSN is 123-45-6789")
+        result = middleware.before_model(state, MagicMock())
+
+        assert result is None
+        assert state["messages"][-1].content == "My SSN is 123-45-6789"
+        assert "pii" in middleware.evidence[-1].triggered_policies
+
+    def test_no_pii_policy_is_a_no_op(self) -> None:
+        middleware = TealTigerMiddleware(
+            policies=[{"type": "tool_allowlist", "tools": ["search"]}]
+        )
+        middleware.before_agent({}, MagicMock())
+
+        state = make_state("My SSN is 123-45-6789")
+        result = middleware.before_model(state, MagicMock())
+
+        assert result is None
+        assert len(middleware.evidence) == 0
