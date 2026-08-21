@@ -13,7 +13,7 @@ Design invariants (see ../../README.md for full rationale):
    record.
 3. Policy version is stamped on every decision; threshold changes require a
    version bump.
-4. Sanctions is a veto: ``confirmed`` → reject; ``near_match`` → escalate
+4. Sanctions is a veto: ``exact_match`` → reject; ``near_match`` → escalate
    minimum.
 5. Identity confidence < 0.5 forces escalation.
 6. All escalations name their trigger in ``escalation_reason``.
@@ -74,11 +74,17 @@ DEFAULT_POLICY = DecisionPolicy()
 
 
 # Sanctions status → numeric signal in [0, 1]. Deterministic table.
+# "confirmed" is the pre-#439 spelling of "exact_match"; both are honoured so
+# an in-flight caller cannot silently fall through to the unknown-status path.
 _SANCTIONS_SIGNAL: dict[str, float] = {
     "clear": 0.0,
     "near_match": 0.6,
+    "exact_match": 1.0,
     "confirmed": 1.0,
 }
+
+#: Statuses that reject regardless of the composite score.
+_HARD_REJECT_STATUSES = frozenset({"exact_match", "confirmed"})
 
 
 def _canonicalise(obj: Any) -> Any:
@@ -143,10 +149,10 @@ async def make_decision(
     escalation_reasons: list[str] = []
     final_band = initial_band
 
-    if sanctions.status == "confirmed":
-        # Confirmed sanctions match is a hard reject regardless of composite.
+    if sanctions.status in _HARD_REJECT_STATUSES:
+        # An exact sanctions match is a hard reject regardless of composite.
         final_band = "reject"
-        escalation_reasons.append("sanctions_confirmed_hard_reject")
+        escalation_reasons.append("sanctions_exact_match_hard_reject")
     elif sanctions.status == "near_match":
         # A near-match cannot be auto-approved. Escalate minimum.
         if final_band == "approve":
