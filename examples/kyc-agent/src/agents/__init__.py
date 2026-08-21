@@ -5,6 +5,16 @@ from .decision_agent import (
     DecisionPolicy,
     DEFAULT_POLICY,
 )
+from .sanctions_screener import (
+    screen_sanctions,
+    load_sanctions_list,
+    name_similarity,
+    normalise_name,
+    SanctionsScreeningError,
+    SCREENER_VERSION,
+    DEFAULT_MATCH_THRESHOLD,
+    DEFAULT_EXACT_THRESHOLD,
+)
 from .document_extractor import (
     extract_identity,
     extract_identity_mock,
@@ -27,4 +37,12 @@ __all__ = [
     "DocumentExtractionError",
     "EXTRACTOR_VERSION",
     "REQUIRED_FIELDS",
+    "screen_sanctions",
+    "load_sanctions_list",
+    "name_similarity",
+    "normalise_name",
+    "SanctionsScreeningError",
+    "SCREENER_VERSION",
+    "DEFAULT_MATCH_THRESHOLD",
+    "DEFAULT_EXACT_THRESHOLD",
 ]

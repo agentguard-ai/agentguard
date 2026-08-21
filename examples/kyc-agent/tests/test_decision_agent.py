@@ -48,22 +48,24 @@ def _identity(confidence: float = 0.95) -> ExtractedIdentity:
 
 
 def _clear() -> SanctionsResult:
-    return SanctionsResult(status="clear")
+    return SanctionsResult(status="clear", confidence=0.94)
 
 
 def _near_match() -> SanctionsResult:
     return SanctionsResult(
         status="near_match",
-        matched_lists=("OFAC-SDN",),
-        matches=({"list": "OFAC-SDN", "score": 0.72},),
+        confidence=0.78,
+        matched_entity="IVAN TESTOVICH FIXTURE",
+        list_source="OFAC_SDN",
     )
 
 
-def _confirmed() -> SanctionsResult:
+def _exact_match() -> SanctionsResult:
     return SanctionsResult(
-        status="confirmed",
-        matched_lists=("OFAC-SDN", "EU-CFSP"),
-        matches=({"list": "OFAC-SDN", "score": 0.99},),
+        status="exact_match",
+        confidence=0.99,
+        matched_entity="IVAN TESTOVICH FIXTURE",
+        list_source="OFAC_SDN",
     )
 
 
@@ -108,12 +110,12 @@ def test_custom_policy_can_produce_pure_threshold_reject():
 # ---------- hard overrides ----------
 
 
-def test_confirmed_sanctions_always_rejects():
-    # Even with zero risk and high identity confidence, confirmed = reject.
-    d = _run(make_decision(_identity(), _confirmed(), _risk(0.0)))
+def test_exact_sanctions_match_always_rejects():
+    # Even with zero risk and high identity confidence, exact_match = reject.
+    d = _run(make_decision(_identity(), _exact_match(), _risk(0.0)))
     assert d.decision == "reject"
     assert d.requires_human_review is True
-    assert "sanctions_confirmed_hard_reject" in (d.escalation_reason or "")
+    assert "sanctions_exact_match_hard_reject" in (d.escalation_reason or "")
 
 
 def test_near_match_forbids_auto_approve():
@@ -133,7 +135,7 @@ def test_low_identity_confidence_forces_escalate_on_approve_case():
 
 
 def test_low_identity_confidence_does_not_override_reject():
-    d = _run(make_decision(_identity(confidence=0.1), _confirmed(), _risk(0.0)))
+    d = _run(make_decision(_identity(confidence=0.1), _exact_match(), _risk(0.0)))
     assert d.decision == "reject"
 
 
@@ -224,5 +226,5 @@ def test_return_type_and_shape():
 def test_all_three_decision_paths_reachable():
     approve = _run(make_decision(_identity(), _clear(), _risk(0.05)))
     escalate = _run(make_decision(_identity(), _near_match(), _risk(0.0)))
-    reject = _run(make_decision(_identity(), _confirmed(), _risk(0.0)))
+    reject = _run(make_decision(_identity(), _exact_match(), _risk(0.0)))
     assert {approve.decision, escalate.decision, reject.decision} == {"approve", "escalate", "reject"}

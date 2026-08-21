@@ -1,0 +1,304 @@
+{
+  "_comment": "Fully synthetic sanctions fixture for the KYC example (#439). No real sanctioned person, entity, programme or country is represented. Countries ZZ/QQ/XX are user-assigned ISO 3166-1 codes. Replaced by fixtures/sanctions_list.json once sub-issue #437 lands.",
+  "entries": [
+    {
+      "id": "SYN-OFAC-001",
+      "name": "Ivan Testovich Fixture",
+      "aliases": [
+        "Testovich, Ivan",
+        "I. Testovich Fixture"
+      ],
+      "date_of_birth": "1961-02-02",
+      "nationality": "ZZ",
+      "list_source": "OFAC_SDN",
+      "programs": [
+        "SYNTH-OFAC"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-EU-002",
+      "name": "Marta Fixtura Fixture",
+      "aliases": [
+        "Fixtura, Marta",
+        "M. Fixtura Fixture"
+      ],
+      "date_of_birth": "1962-03-03",
+      "nationality": "QQ",
+      "list_source": "EU_SANCTIONS",
+      "programs": [
+        "SYNTH-EU"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-UN-003",
+      "name": "Yusuf Mockson Fixture",
+      "aliases": [
+        "Mockson, Yusuf",
+        "Y. Mockson Fixture"
+      ],
+      "date_of_birth": "1963-04-04",
+      "nationality": "ZZ",
+      "list_source": "UN_SANCTIONS",
+      "programs": [
+        "SYNTH-UN"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-OFAC-004",
+      "name": "Ling Synthova Fixture",
+      "aliases": [
+        "Synthova, Ling",
+        "L. Synthova Fixture"
+      ],
+      "date_of_birth": "1964-05-05",
+      "nationality": "QQ",
+      "list_source": "OFAC_SDN",
+      "programs": [
+        "SYNTH-OFAC"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-EU-005",
+      "name": "Pablo Placeholder Fixture",
+      "aliases": [
+        "Placeholder, Pablo",
+        "P. Placeholder Fixture"
+      ],
+      "date_of_birth": "1965-06-06",
+      "nationality": "ZZ",
+      "list_source": "EU_SANCTIONS",
+      "programs": [
+        "SYNTH-EU"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-UN-006",
+      "name": "Anika Sampleton Fixture",
+      "aliases": [
+        "Sampleton, Anika",
+        "A. Sampleton Fixture"
+      ],
+      "date_of_birth": "1966-07-07",
+      "nationality": "QQ",
+      "list_source": "UN_SANCTIONS",
+      "programs": [
+        "SYNTH-UN"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-OFAC-007",
+      "name": "Dmitri Dummity Fixture",
+      "aliases": [
+        "Dummity, Dmitri",
+        "D. Dummity Fixture"
+      ],
+      "date_of_birth": "1967-08-08",
+      "nationality": "ZZ",
+      "list_source": "OFAC_SDN",
+      "programs": [
+        "SYNTH-OFAC"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-EU-008",
+      "name": "Fatima Fakeworth Fixture",
+      "aliases": [
+        "Fakeworth, Fatima",
+        "F. Fakeworth Fixture"
+      ],
+      "date_of_birth": "1968-09-09",
+      "nationality": "QQ",
+      "list_source": "EU_SANCTIONS",
+      "programs": [
+        "SYNTH-EU"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-UN-009",
+      "name": "Kwame Stubbins Fixture",
+      "aliases": [
+        "Stubbins, Kwame",
+        "K. Stubbins Fixture"
+      ],
+      "date_of_birth": "1969-10-10",
+      "nationality": "ZZ",
+      "list_source": "UN_SANCTIONS",
+      "programs": [
+        "SYNTH-UN"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-OFAC-010",
+      "name": "Sofia Mocklin Fixture",
+      "aliases": [
+        "Mocklin, Sofia",
+        "S. Mocklin Fixture"
+      ],
+      "date_of_birth": "1970-11-11",
+      "nationality": "QQ",
+      "list_source": "OFAC_SDN",
+      "programs": [
+        "SYNTH-OFAC"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-EU-011",
+      "name": "Hiro Testerson Fixture",
+      "aliases": [
+        "Testerson, Hiro",
+        "H. Testerson Fixture"
+      ],
+      "date_of_birth": "1971-12-12",
+      "nationality": "ZZ",
+      "list_source": "EU_SANCTIONS",
+      "programs": [
+        "SYNTH-EU"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-UN-012",
+      "name": "Nadia Fictus Fixture",
+      "aliases": [
+        "Fictus, Nadia",
+        "N. Fictus Fixture"
+      ],
+      "date_of_birth": "1972-01-13",
+      "nationality": "QQ",
+      "list_source": "UN_SANCTIONS",
+      "programs": [
+        "SYNTH-UN"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-OFAC-013",
+      "name": "Omar Testovich Fixture",
+      "aliases": [
+        "Testovich, Omar",
+        "O. Testovich Fixture"
+      ],
+      "date_of_birth": "1973-02-14",
+      "nationality": "ZZ",
+      "list_source": "OFAC_SDN",
+      "programs": [
+        "SYNTH-OFAC"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-EU-014",
+      "name": "Elena Fixtura Fixture",
+      "aliases": [
+        "Fixtura, Elena",
+        "E. Fixtura Fixture"
+      ],
+      "date_of_birth": "1974-03-15",
+      "nationality": "QQ",
+      "list_source": "EU_SANCTIONS",
+      "programs": [
+        "SYNTH-EU"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-UN-015",
+      "name": "Tariq Mockson Fixture",
+      "aliases": [
+        "Mockson, Tariq",
+        "T. Mockson Fixture"
+      ],
+      "date_of_birth": "1975-04-16",
+      "nationality": "ZZ",
+      "list_source": "UN_SANCTIONS",
+      "programs": [
+        "SYNTH-UN"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-OFAC-016",
+      "name": "Greta Synthova Fixture",
+      "aliases": [
+        "Synthova, Greta",
+        "G. Synthova Fixture"
+      ],
+      "date_of_birth": "1976-05-17",
+      "nationality": "QQ",
+      "list_source": "OFAC_SDN",
+      "programs": [
+        "SYNTH-OFAC"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-EU-017",
+      "name": "Ivan Placeholder Fixture",
+      "aliases": [
+        "Placeholder, Ivan",
+        "I. Placeholder Fixture"
+      ],
+      "date_of_birth": "1977-06-18",
+      "nationality": "ZZ",
+      "list_source": "EU_SANCTIONS",
+      "programs": [
+        "SYNTH-EU"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-UN-018",
+      "name": "Marta Sampleton Fixture",
+      "aliases": [
+        "Sampleton, Marta",
+        "M. Sampleton Fixture"
+      ],
+      "date_of_birth": "1978-07-19",
+      "nationality": "QQ",
+      "list_source": "UN_SANCTIONS",
+      "programs": [
+        "SYNTH-UN"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-EU-019",
+      "name": "Synthetic Holdings Ltd",
+      "aliases": [
+        "Synthetic Holdings Limited"
+      ],
+      "date_of_birth": "",
+      "nationality": "QQ",
+      "list_source": "EU_SANCTIONS",
+      "programs": [
+        "SYNTH-EU"
+      ],
+      "is_synthetic": true
+    },
+    {
+      "id": "SYN-UN-020",
+      "name": "Placeholder Trading Company",
+      "aliases": [
+        "Placeholder Trading Co",
+        "PTC Fixture"
+      ],
+      "date_of_birth": "",
+      "nationality": "XX",
+      "list_source": "UN_SANCTIONS",
+      "programs": [
+        "SYNTH-UN"
+      ],
+      "is_synthetic": true
+    }
+  ]
+}

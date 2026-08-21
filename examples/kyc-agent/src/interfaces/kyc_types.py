@@ -1,14 +1,13 @@
 """KYC agent type interfaces.
 
-> **Scope note (from ../README.md):** `SanctionsResult` and `RiskAssessment`
-> are minimal stubs that match the fields referenced in the interface
-> published on issue #441. They will be replaced by the canonical types
-> produced by sub-issues #439 / #440.
+> **Scope note (from ../README.md):** `RiskAssessment` is a minimal stub that
+> matches the fields referenced in the interface published on issue #441. It
+> will be replaced by the canonical type produced by sub-issue #440.
 >
 > `ExtractedIdentity` is **canonical** as of sub-issue #438 (document
-> extraction) and matches the interface published on that issue.
-> `KYCDecision` is canonical per #441 and is the return type of
-> `make_decision`.
+> extraction) and `SanctionsResult` as of #439 (sanctions screening); both
+> match the interfaces published on those issues. `KYCDecision` is canonical
+> per #441 and is the return type of `make_decision`.
 """
 from __future__ import annotations
 
@@ -52,7 +51,7 @@ class ExtractedIdentity:
         return asdict(self)
 
 
-# ---------- STUBS (to be deleted when upstream types land) ----------
+# ---------- CANONICAL (owned by #439) ----------
 
 
 @dataclass(frozen=True)
@@ -60,13 +59,19 @@ class SanctionsResult:
     """Output of the Sanctions Screening Agent (sub-issue #439).
 
     ``status`` is the load-bearing field for the Decision Agent's hard
-    overrides. ``matches`` is preserved so the audit record can be replayed.
+    overrides: ``exact_match`` is a veto, ``near_match`` forbids auto
+    approval. ``confidence`` is confidence in *that verdict* — for ``clear``
+    it is the distance from the closest entry on the list, not a name
+    similarity score.
     """
 
-    status: Literal["clear", "near_match", "confirmed"]
-    matched_lists: tuple[str, ...] = ()  # e.g. ("OFAC-SDN", "EU-CFSP")
-    matches: tuple[dict, ...] = ()       # opaque evidence blobs
-    confidence: float = 1.0
+    status: Literal["clear", "near_match", "exact_match"]
+    confidence: float
+    matched_entity: Optional[str] = None
+    list_source: Optional[str] = None  # "OFAC_SDN", "EU_SANCTIONS", "UN_SANCTIONS"
+
+
+# ---------- STUBS (to be deleted when upstream types land) ----------
 
 
 @dataclass(frozen=True)
