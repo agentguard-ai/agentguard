@@ -73,14 +73,15 @@ class TealTigerMiddleware(AgentMiddleware):
 
     Args:
         policies: List of policy config dicts. Supported types:
-            - tool_allowlist, tool_blocklist, tool_args
-            - pii (action: BLOCK/REDACT/FLAG)
-            - prompt_injection (action: BLOCK/FLAG)
-            - secrets (action: BLOCK/FLAG)
+            - tool_allowlist, tool_blocklist
+            - pii (action: block/redact/mask, via tealtiger.guardrails.PIIDetectionGuardrail)
             - cost_limit (max_per_session, max_per_request, max_daily)
-            - rate_limit (max_calls, window, tool)
-            - circuit_breaker (failure_threshold, recovery_time)
-            - content_moderation (blocked_categories)
+            - rate_limit (max_calls, window) -- max_calls is a session-lifetime
+              call-count cap; window is accepted but not enforced (no time-based
+              reset)
+            - circuit_breaker (failure_threshold) -- opens after N consecutive
+              wrap_tool_call failures for a tool; recovery_time is accepted but
+              not enforced (no time-based half-open state)
         agent_id: Optional agent identifier for NHI scope enforcement.
         mode: Governance mode (ENFORCE, MONITOR, REPORT_ONLY).
         freeze_tools: Tools that are unconditionally blocked (immutable deny).

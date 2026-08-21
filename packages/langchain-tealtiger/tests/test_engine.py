@@ -259,3 +259,142 @@ class TestGovernanceBridgeMultiplePolicies:
         decision = engine.evaluate("blocked_tool", {})
         assert decision.action == GovernanceAction.DENY
         assert "TOOL_NOT_ALLOWED" in decision.reason_codes
+
+
+class TestGovernanceBridgeConstruction:
+    """Regression tests for the otel_enabled constructor bug."""
+
+    def test_constructs_with_otel_enabled_true(self) -> None:
+        engine = GovernanceBridge(policies=[], mode=GovernanceMode.ENFORCE, otel_enabled=True)
+        assert engine._otel_enabled is True
+
+    def test_constructs_with_otel_enabled_default(self) -> None:
+        # Previously raised TypeError unconditionally, regardless of this value.
+        engine = GovernanceBridge(policies=[])
+        assert engine._otel_enabled is False
+
+
+class TestGovernanceBridgeCircuitBreaker:
+    """Regression tests for record_tool_success/record_tool_failure and the
+    circuit_breaker policy they drive.
+    """
+
+    def test_methods_exist_and_are_callable(self) -> None:
+        engine = GovernanceBridge(policies=[], mode=GovernanceMode.ENFORCE)
+        engine.record_tool_success("search")
+        engine.record_tool_failure("search", "boom")
+
+    def test_opens_after_failure_threshold(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "circuit_breaker", "failure_threshold": 2}],
+            mode=GovernanceMode.ENFORCE,
+        )
+        engine.record_tool_failure("flaky_tool", "error 1")
+        engine.record_tool_failure("flaky_tool", "error 2")
+
+        decision = engine.evaluate("flaky_tool", {})
+        assert decision.action == GovernanceAction.DENY
+        assert "CIRCUIT_BREAKER_OPEN" in decision.reason_codes
+
+    def test_success_resets_failure_count(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "circuit_breaker", "failure_threshold": 2}],
+            mode=GovernanceMode.ENFORCE,
+        )
+        engine.record_tool_failure("flaky_tool", "error 1")
+        engine.record_tool_success("flaky_tool")
+        engine.record_tool_failure("flaky_tool", "error 2")
+
+        # Only one consecutive failure since the reset -- breaker stays closed.
+        decision = engine.evaluate("flaky_tool", {})
+        assert decision.action == GovernanceAction.ALLOW
+
+    def test_below_threshold_stays_closed(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "circuit_breaker", "failure_threshold": 3}],
+            mode=GovernanceMode.ENFORCE,
+        )
+        engine.record_tool_failure("flaky_tool", "error 1")
+        decision = engine.evaluate("flaky_tool", {})
+        assert decision.action == GovernanceAction.ALLOW
+
+    def test_monitor_mode_allows_but_records_open_breaker(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "circuit_breaker", "failure_threshold": 1}],
+            mode=GovernanceMode.MONITOR,
+        )
+        engine.record_tool_failure("flaky_tool", "error 1")
+        decision = engine.evaluate("flaky_tool", {})
+        assert decision.action == GovernanceAction.ALLOW
+        assert "circuit_breaker" in decision.triggered_policies
+
+    def test_other_tools_unaffected(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "circuit_breaker", "failure_threshold": 1}],
+            mode=GovernanceMode.ENFORCE,
+        )
+        engine.record_tool_failure("flaky_tool", "error 1")
+        decision = engine.evaluate("other_tool", {})
+        assert decision.action == GovernanceAction.ALLOW
+
+
+class TestGovernanceBridgeEvaluateContent:
+    """Regression tests for evaluate_content and the real
+    tealtiger.guardrails.PIIDetectionGuardrail integration.
+    """
+
+    def test_no_pii_policy_configured_allows(self) -> None:
+        engine = GovernanceBridge(policies=[], mode=GovernanceMode.ENFORCE)
+        decision = engine.evaluate_content("My SSN is 123-45-6789", stage="input")
+        assert decision.action == GovernanceAction.ALLOW
+
+    def test_clean_content_allowed(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "pii", "action": "block"}], mode=GovernanceMode.ENFORCE
+        )
+        decision = engine.evaluate_content("No sensitive data here.", stage="input")
+        assert decision.action == GovernanceAction.ALLOW
+
+    def test_pii_blocked_in_enforce_mode(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "pii", "action": "block"}], mode=GovernanceMode.ENFORCE
+        )
+        decision = engine.evaluate_content("My SSN is 123-45-6789", stage="input")
+        assert decision.action == GovernanceAction.DENY
+        assert "PII_SSN" in decision.reason_codes
+
+    def test_pii_redacted_in_enforce_mode(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "pii", "action": "redact"}], mode=GovernanceMode.ENFORCE
+        )
+        decision = engine.evaluate_content("My SSN is 123-45-6789", stage="output")
+        assert decision.action == GovernanceAction.REDACT
+        assert decision.redacted_content is not None
+        assert "123-45-6789" not in decision.redacted_content
+        assert "REDACTED_SSN" in decision.redacted_content
+
+    def test_pii_not_blocked_in_monitor_mode(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "pii", "action": "block"}], mode=GovernanceMode.MONITOR
+        )
+        decision = engine.evaluate_content("My SSN is 123-45-6789", stage="input")
+        assert decision.action == GovernanceAction.ALLOW
+        assert "pii" in decision.triggered_policies
+
+    def test_evidence_is_recorded(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "pii", "action": "block"}], mode=GovernanceMode.ENFORCE
+        )
+        engine.evaluate_content("My SSN is 123-45-6789", stage="input")
+        assert len(engine.evidence) == 1
+        assert engine.evidence[0].tool_name == "<input>"
+
+
+class TestGovernanceBridgeSummaryRedact:
+    def test_redact_counts_as_modified(self) -> None:
+        engine = GovernanceBridge(
+            policies=[{"type": "pii", "action": "redact"}], mode=GovernanceMode.ENFORCE
+        )
+        engine.evaluate_content("My SSN is 123-45-6789", stage="input")
+        summary = engine.get_summary()
+        assert summary.modified == 1
