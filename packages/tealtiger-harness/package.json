@@ -1,0 +1,61 @@
+{
+    "name": "tealtiger-harness",
+    "version": "0.1.0",
+    "description": "TealTiger governance plugin for DeepSeek Harness",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+  "files": [
+    "dist",
+    "README.md",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+    "scripts": {
+        "build": "tsup",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run"
+    },
+    "keywords": [
+        "deepseek",
+        "deepseek-harness",
+        "cordis",
+        "governance",
+        "security",
+        "tealtiger"
+    ],
+    "license": "Apache-2.0",
+    "engines": {
+        "node": "^22.19.0 || >=24.0.0"
+    },
+    "peerDependencies": {
+        "@deepseek-ai/cordis": "^4.0.2",
+        "@deepseek-ai/dsh-tools": "^0.1.2-alpha.3",
+        "tealtiger": "^1.4.0"
+    },
+    "dependencies": {
+        "@deepseek-ai/schemastery": "^3.18.2"
+    },
+    "devDependencies": {
+        "@deepseek-ai/cordis": "^4.0.2",
+        "@deepseek-ai/dsh-tools": "^0.1.2-alpha.3",
+        "@types/node": "^22.0.0",
+        "tealtiger": "^1.4.0",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.11"
+    },
+    "allowScripts": {
+        "esbuild@0.27.7": true
+    }
+}
