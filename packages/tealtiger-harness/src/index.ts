@@ -175,7 +175,9 @@ export class TealTigerHarnessService extends Service {
 
     private readonly piiGuardrail: PIIDetectionGuardrail;
 
-    private readonly deniedExecutions = new WeakMap<Readonly <ToolExecution>, string>();
+    private readonly deniedExecutions = new WeakMap<Readonly<ToolExecution>, string>();
+
+    private readonly sessionCostsMicroUsd = new Map<string, number>();
 
     constructor(ctx: Context, input: Config = {}) {
         super(ctx, 'tealtiger');
@@ -219,6 +221,10 @@ export class TealTigerHarnessService extends Service {
         return (
             this.config.allowedTools.has('*') || this.config.allowedTools.has(toolName)
         );
+    }
+
+    private toolCostMicroUsd(toolName: string): number | undefined {
+        return (this.config.toolCostsMicroUsd.get(toolName) ?? this.config.defaultToolCostMicroUsd);
     }
 
     public async evaluateTool(
@@ -268,25 +274,61 @@ export class TealTigerHarnessService extends Service {
             }
         }
 
-        if (scannerViolation && this.mode === 'MONITOR') {
+        const estimatedCallCostMicroUsd =
+            this.toolCostMicroUsd(execution.name);
+
+        const currentSessionCostMicroUsd =
+            this.sessionCostsMicroUsd.get(owner) ?? 0;
+
+        const projectedSessionCostMicroUsd = Math.min(
+            Number.MAX_SAFE_INTEGER,
+            currentSessionCostMicroUsd + (estimatedCallCostMicroUsd ?? 0),
+        );
+
+        const budgetExceeded =
+            this.config.sessionBudgetMicroUsd !== undefined &&
+            projectedSessionCostMicroUsd > this.config.sessionBudgetMicroUsd;
+
+        if (budgetExceeded) {
+            reasonCodes.add('BUDGET_EXCEEDED');
+            riskScore = Math.max(riskScore, 100);
+        }
+
+        if (
+            (scannerViolation || budgetExceeded) &&
+            this.mode === 'MONITOR'
+        ) {
             reasonCodes.add('MONITOR_MODE_VIOLATION');
         }
 
         const scannerDenied =
             scannerViolation && this.mode === 'ENFORCE';
 
+        const budgetDenied = budgetExceeded && this.mode === 'ENFORCE';
+
         const action: GovernanceAction =
-            frozen || decision.action === 'DENY' || scannerDenied
+            frozen || decision.action === 'DENY' || scannerDenied || budgetDenied
                 ? 'DENY'
                 : 'ALLOW';
 
         const reason = frozen
             ? 'Tool blocked by immutable FREEZE policy'
             : scannerDenied
-                ? 'Tool arguments blocked by sensitive-data policy'
-                : scannerViolation
-                    ? 'Tool argument policy violation observed'
-                    : decision.reason;
+                ? 'Tool blocked by sensitive-data policy'
+                : budgetDenied
+                    ? 'Tool blocked because the session budget would be exceeded'
+                    : scannerViolation
+                        ? 'Tool argument policy violation detected in MONITOR '
+                        : budgetExceeded
+                            ? 'Session budget limit exceeded'
+                            : decision.reason;
+
+        let sessionTotalMicroUsd = currentSessionCostMicroUsd;
+
+        if (action === 'ALLOW' && estimatedCallCostMicroUsd !== undefined) {
+            sessionTotalMicroUsd = projectedSessionCostMicroUsd;
+            this.sessionCostsMicroUsd.set(owner, sessionTotalMicroUsd);
+        }
 
         const receipt: TealTigerReceipt = Object.freeze({
             teec_version: TEEC_VERSION,
@@ -308,7 +350,14 @@ export class TealTigerHarnessService extends Service {
             }),
             cost: Object.freeze({
                 currency: 'USD',
-                session_total_usd: 0,
+                session_total_usd: fromMicroUsd(sessionTotalMicroUsd),
+                ...(estimatedCallCostMicroUsd === undefined
+                    ? {}
+                    : {
+                        estimated_call_usd: fromMicroUsd(
+                            estimatedCallCostMicroUsd,
+                        ),
+                    }),
                 ...(this.config.sessionBudgetMicroUsd === undefined
                     ? {}
                     : {

@@ -138,23 +138,83 @@ describe('TealTigerHarnessService', () => {
         await ctx.fiber.dispose();
     });
     it('preserves a scanner denial in the final guard', async () => {
-      const ctx = new Context();
-      const tools = new TestTools(ctx);
+        const ctx = new Context();
+        const tools = new TestTools(ctx);
 
-      const service = new TealTigerHarnessService(ctx, {
-          mode: 'ENFORCE',
-          allowedTools: ['*'],
-      });
+        const service = new TealTigerHarnessService(ctx, {
+            mode: 'ENFORCE',
+            allowedTools: ['*'],
+        });
 
-      const execution = createExecution({
-          apiKey: 'sk-12345678901234567890',
-      });
+        const execution = createExecution({
+            apiKey: 'sk-12345678901234567890',
+        });
 
-      const receipt = await service.evaluateTool(execution);
+        const receipt = await service.evaluateTool(execution);
 
-      expect(receipt.action).toBe('DENY');
-      expect(tools.guardCallback?.(execution)).toBe(receipt.reason);
+        expect(receipt.action).toBe('DENY');
+        expect(tools.guardCallback?.(execution)).toBe(receipt.reason);
 
-      await ctx.fiber.dispose();
-  });
+        await ctx.fiber.dispose();
+    }); 
+    it('accumulates costs and denies calls over the session budget', async () => {
+        const ctx = new Context();
+        const tools = new TestTools(ctx);
+
+        const service = new TealTigerHarnessService(ctx, {
+            mode: 'ENFORCE',
+            allowedTools: ['*'],
+            sessionBudgetUsd: 0.15,
+            defaultToolCostUsd: 0.01,
+            toolCostsUsd: {
+                search: 0.1,
+            },
+        });
+
+        const firstExecution = createExecution({ query: 'first' });
+        const firstReceipt = await service.evaluateTool(firstExecution);
+
+        expect(firstReceipt.action).toBe('ALLOW');
+        expect(firstReceipt.cost.estimated_call_usd).toBe(0.1);
+        expect(firstReceipt.cost.session_total_usd).toBe(0.1);
+        expect(firstReceipt.cost.session_limit_usd).toBe(0.15);
+
+        const secondExecution = createExecution({ query: 'second' });
+        const secondReceipt = await service.evaluateTool(secondExecution);
+
+        expect(secondReceipt.action).toBe('DENY');
+        expect(secondReceipt.reason_code).toContain('BUDGET_EXCEEDED');
+
+        // The denied call must not consume more budget.
+        expect(secondReceipt.cost.session_total_usd).toBe(0.1);
+
+        // The final Harness guard must preserve the denial.
+        expect(tools.guardCallback?.(secondExecution)).toBe(
+            secondReceipt.reason,
+        );
+
+        await ctx.fiber.dispose();
+    }); 
+    it('reports an exceeded budget without denying in MONITOR mode', async () => {
+        const ctx = new Context();
+        new TestTools(ctx);
+
+        const service = new TealTigerHarnessService(ctx, {
+            mode: 'MONITOR',
+            allowedTools: ['*'],
+            sessionBudgetUsd: 0.05,
+            defaultToolCostUsd: 0.1,
+        });
+
+        const receipt = await service.evaluateTool(
+            createExecution({ query: 'allowed but reported' }),
+        );
+
+        expect(receipt.action).toBe('ALLOW');
+        expect(receipt.reason_code).toContain('BUDGET_EXCEEDED');
+        expect(receipt.reason_code).toContain('MONITOR_MODE_VIOLATION');
+        expect(receipt.cost.session_total_usd).toBe(0.1);
+
+        await ctx.fiber.dispose();
+    });
 });
