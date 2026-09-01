@@ -1,7 +1,12 @@
-import z from "@deepseek-ai/schemastery"
+import {Service, type Context} from "@deepseek-ai/cordis";
+import z from "@deepseek-ai/schemastery";
 
 export const name = 'tealtiger-harness';
 export const inject = ['tools'];
+
+const USD_SCALE = 1.0;
+const MAX_USD = Number.MAX_SAFE_INTEGER / USD_SCALE;
+
 
 export type GovernanceMode = 'ENFORCE' | 'MONITOR' | 'REPORT_ONLY';
 
@@ -22,8 +27,104 @@ export const Config: z<Config> = z.object({
     frozenTools: z.array(z.string()).default([]),
     piiDetection: z.boolean().default(true),
     secretDetection: z.boolean().default(true),
-    sessionBudgetUsd: z.number().min(0),
-    defaultToolCostUsd: z.number().min(0),
-    toolCostsUsd: z.dict(z.number().min(0)).default({}),
+    sessionBudgetUsd: z.number().min(0).max(MAX_USD),
+    defaultToolCostUsd: z.number().min(0).max(MAX_USD),
+    toolCostsUsd: z.dict(z.number().min(0)).max(MAX_USD).default({}),
 })
 
+declare module "@deepseek-ai/cordis" {
+    interface Context{
+        tealtiger: TealTigerHarnessService;
+    }
+}
+
+function normalizeToolNames(values: readonly string[], fieldName: string): ReadonlySet<string> {
+    const names = new Set<string>();
+    for(const value of values){
+        const name = value.trim();
+
+        if (name.length === 0){
+            throw new Error(`Invalid ${fieldName}: tool name cannot be empty`);
+        }
+        if(names.has(name)){
+            throw new Error(`Invalid ${fieldName}: duplicate tool name "${name}"`);
+        }
+        names.add(name);
+    }
+    return names;
+}
+
+interface ResolvedConfig{
+    readonly mode: GovernanceMode;
+    readonly allowedTools: ReadonlySet<string>;
+    readonly frozenTools: ReadonlySet<string>;
+    readonly piiDetection: boolean;
+    readonly secretDetection: boolean;
+    readonly sessionBudgetMicroUsd?: number;
+    readonly defaultToolCostMicroUsd?: number;
+    readonly toolCostsMicroUsd: ReadonlyMap<string, number>;
+}
+
+function toMicroUsd(value: number): number {
+    return Math.round(value * USD_SCALE);
+}
+
+function resolveConfig(input:Config): ResolvedConfig {
+    const config = Config(input);
+    if(config.sessionBudgetUsd !== undefined && config.defaultToolCostUsd === undefined){
+        throw new Error("defaultToolCostUsd is required when sessionBudgetUsd is configured");
+    }
+    const toolCosts = new Map<string, number>();
+    
+    for (const [rawName, cost] of Object.entries(config.toolCostsUsd ?? {})) {
+        const name = rawName.trim();
+        if (name.length === 0) {
+            throw new Error(`Invalid tool cost: tool name cannot be empty`);
+        }
+        if (toolCosts.has(name)) {
+            throw new Error(`Invalid tool cost: duplicate tool name "${name}"`);
+        }
+        toolCosts.set(name, toMicroUsd(cost));
+    }
+    return Object.freeze({
+        mode: config.mode ?? 'ENFORCE',
+        allowedTools: normalizeToolNames(config.allowedTools ?? [], 'allowedTools'),
+        frozenTools: normalizeToolNames(config.frozenTools ?? [], 'frozenTools'),
+        piiDetection: config.piiDetection ?? true,
+        secretDetection: config.secretDetection ?? true,
+        sessionBudgetMicroUsd: config.sessionBudgetUsd !== undefined ? toMicroUsd(config.sessionBudgetUsd) : undefined,
+        defaultToolCostMicroUsd: config.defaultToolCostUsd !== undefined ? toMicroUsd(config.defaultToolCostUsd) : undefined,
+        toolCostsMicroUsd: toolCosts,
+    })
+}
+
+export class TealTigerHarnessService extends Service {
+    public readonly mode : GovernanceMode;
+
+    private readonly config: ResolvedConfig;
+
+    constructor(ctx: Context, input: Config = {}) {
+        super(ctx, 'tealtiger');
+
+        this.config = resolveConfig(input);
+        this.mode = this.config.mode;
+    }
+    
+    public isFrozen(toolName: string): boolean {
+        return this.config.frozenTools.has(toolName);
+    }
+
+    public isAllowed(toolName: string): boolean {
+        if(this.isFrozen(toolName)){
+            return false;
+        }
+        
+        return(
+            this.config.allowedTools.has('*') || this.config.allowedTools.has(toolName)
+        );
+    }
+}
+
+export function apply(ctx: Context, config: Config = {}): void{
+    new TealTigerHarnessService(ctx, config);
+}
