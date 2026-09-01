@@ -217,4 +217,45 @@ describe('TealTigerHarnessService', () => {
 
         await ctx.fiber.dispose();
     });
+      it('requires a default tool cost when a budget is configured', async () => {
+      const ctx = new Context();
+      new TestTools(ctx);
+
+      expect(
+          () =>
+              new TealTigerHarnessService(ctx, {
+                  sessionBudgetUsd: 1,
+              }),
+      ).toThrow(
+          'defaultToolCostUsd is required when sessionBudgetUsd is configured',
+      );
+
+      await ctx.fiber.dispose();
+  });
+   it('rejects duplicate tool names after trimming whitespace', async () => {
+      const ctx = new Context();
+      new TestTools(ctx);
+
+      expect(
+          () =>
+              new TealTigerHarnessService(ctx, {
+                  allowedTools: ['search', ' search '],
+              }),
+      ).toThrow('duplicate tool name "search"');
+
+      await ctx.fiber.dispose();
+  });
+   it('rejects negative tool costs', async () => {
+      const ctx = new Context();
+      new TestTools(ctx);
+
+      expect(
+          () =>
+              new TealTigerHarnessService(ctx, {
+                  defaultToolCostUsd: -0.01,
+              }),
+      ).toThrow();
+
+      await ctx.fiber.dispose();
+  });
 });
