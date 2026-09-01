@@ -29,11 +29,11 @@ vi.mock('tealtiger', () => ({
     },
 }));
 
- import {
-      apply,
-      TealTigerHarnessService,
-      type TealTigerReceipt,
-  } from './index';
+import {
+    apply,
+    TealTigerHarnessService,
+    type TealTigerReceipt,
+} from './index';
 
 type TestGuard = (
     execution: Readonly<ToolExecution>,
@@ -160,7 +160,7 @@ describe('TealTigerHarnessService', () => {
         expect(tools.guardCallback?.(execution)).toBe(receipt.reason);
 
         await ctx.fiber.dispose();
-    }); 
+    });
     it('accumulates costs and denies calls over the session budget', async () => {
         const ctx = new Context();
         const tools = new TestTools(ctx);
@@ -198,7 +198,7 @@ describe('TealTigerHarnessService', () => {
         );
 
         await ctx.fiber.dispose();
-    }); 
+    });
     it('reports an exceeded budget without denying in MONITOR mode', async () => {
         const ctx = new Context();
         new TestTools(ctx);
@@ -221,100 +221,99 @@ describe('TealTigerHarnessService', () => {
 
         await ctx.fiber.dispose();
     });
-      it('requires a default tool cost when a budget is configured', async () => {
-      const ctx = new Context();
-      new TestTools(ctx);
+    it('requires a default tool cost when a budget is configured', async () => {
+        const ctx = new Context();
+        new TestTools(ctx);
 
-      expect(
-          () =>
-              new TealTigerHarnessService(ctx, {
-                  sessionBudgetUsd: 1,
-              }),
-      ).toThrow(
-          'defaultToolCostUsd is required when sessionBudgetUsd is configured',
-      );
+        expect(
+            () =>
+                new TealTigerHarnessService(ctx, {
+                    sessionBudgetUsd: 1,
+                }),
+        ).toThrow(
+            'defaultToolCostUsd is required when sessionBudgetUsd is configured',
+        );
 
-      await ctx.fiber.dispose();
-  });
-   it('rejects duplicate tool names after trimming whitespace', async () => {
-      const ctx = new Context();
-      new TestTools(ctx);
+        await ctx.fiber.dispose();
+    });
+    it('rejects duplicate tool names after trimming whitespace', async () => {
+        const ctx = new Context();
+        new TestTools(ctx);
 
-      expect(
-          () =>
-              new TealTigerHarnessService(ctx, {
-                  allowedTools: ['search', ' search '],
-              }),
-      ).toThrow('duplicate tool name "search"');
+        expect(
+            () =>
+                new TealTigerHarnessService(ctx, {
+                    allowedTools: ['search', ' search '],
+                }),
+        ).toThrow('duplicate tool name "search"');
 
-      await ctx.fiber.dispose();
-  });
-   it('rejects negative tool costs', async () => {
-      const ctx = new Context();
-      new TestTools(ctx);
+        await ctx.fiber.dispose();
+    });
+    it('rejects negative tool costs', async () => {
+        const ctx = new Context();
+        new TestTools(ctx);
 
-      expect(
-          () =>
-              new TealTigerHarnessService(ctx, {
-                  defaultToolCostUsd: -0.01,
-              }),
-      ).toThrow();
+        expect(
+            () =>
+                new TealTigerHarnessService(ctx, {
+                    defaultToolCostUsd: -0.01,
+                }),
+        ).toThrow();
 
-      await ctx.fiber.dispose();
-  });
-   it('creates immutable governance receipts', async () => {
-      const ctx = new Context();
-      new TestTools(ctx);
+        await ctx.fiber.dispose();
+    });
+    it('creates immutable governance receipts', async () => {
+        const ctx = new Context();
+        new TestTools(ctx);
 
-      const service = new TealTigerHarnessService(ctx, {
-          mode: 'ENFORCE',
-          allowedTools: ['*'],
-      });
+        const service = new TealTigerHarnessService(ctx, {
+            mode: 'ENFORCE',
+            allowedTools: ['*'],
+        });
 
-      const receipt = await service.evaluateTool(
-          createExecution({ query: 'safe' }),
-      );
+        const receipt = await service.evaluateTool(
+            createExecution({ query: 'safe' }),
+        );
 
-      expect(Object.isFrozen(receipt)).toBe(true);
-      expect(Object.isFrozen(receipt.reason_code)).toBe(true);
-      expect(Object.isFrozen(receipt.component_versions)).toBe(true);
-      expect(Object.isFrozen(receipt.cost)).toBe(true);
+        expect(Object.isFrozen(receipt)).toBe(true);
+        expect(Object.isFrozen(receipt.reason_code)).toBe(true);
+        expect(Object.isFrozen(receipt.component_versions)).toBe(true);
+        expect(Object.isFrozen(receipt.cost)).toBe(true);
 
-      await ctx.fiber.dispose();
-  });
-   it('emits a sanitized receipt before denying execution', async () => {
-      const ctx = new Context();
-      new TestTools(ctx);
+        await ctx.fiber.dispose();
+    });
+    it('emits a sanitized receipt before denying execution', async () => {
+        const ctx = new Context();
+        new TestTools(ctx);
 
-      const receipts: TealTigerReceipt[] = [];
+        const receipts: TealTigerReceipt[] = [];
 
-      ctx.on('tealtiger/decision', (receipt) => {
-          receipts.push(receipt);
-      });
+        ctx.on('tealtiger/decision', (receipt) => {
+            receipts.push(receipt);
+        });
 
-      apply(ctx, {
-          mode: 'ENFORCE',
-          allowedTools: ['*'],
-      });
+        apply(ctx, {
+            mode: 'ENFORCE',
+            allowedTools: ['*'],
+        });
 
-      const secret = 'sk-12345678901234567890';
-      const execution = createExecution({ apiKey: secret });
+        const secret = 'sk-12345678901234567890';
+        const execution = createExecution({ apiKey: secret });
 
-      const decision = await ctx.waterfall(
-          ctx.tools,
-          'tools/pre-execute',
-          execution,
-          () => Promise.resolve({ kind: 'allow' as const }),
-      );
+        const decision = await ctx.waterfall(
+            'tools/pre-execute',
+            execution,
+            () => Promise.resolve({ kind: 'allow' as const }),
+        );
 
-      expect(decision.kind).toBe('deny');
-      expect(receipts).toHaveLength(1);
-      expect(receipts[0]?.action).toBe('DENY');
-      expect(receipts[0]?.reason_code).toContain('SECRET_DETECTED');
+        expect(decision.kind).toBe('deny');
+        expect(receipts).toHaveLength(1);
+        expect(receipts[0]?.action).toBe('DENY');
+        expect(receipts[0]?.reason_code).toContain('SECRET_DETECTED');
 
-      // Audit data must never contain the detected secret.
-      expect(JSON.stringify(receipts[0])).not.toContain(secret);
+        // Audit data must never contain the detected secret.
+        expect(JSON.stringify(receipts[0])).not.toContain(secret);
 
-      await ctx.fiber.dispose();
-  });
+        await ctx.fiber.dispose();
+    });
 });
