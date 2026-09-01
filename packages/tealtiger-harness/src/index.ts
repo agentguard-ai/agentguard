@@ -5,7 +5,7 @@ import type {ToolExecution} from "@deepseek-ai/dsh-tools";
 export const name = 'tealtiger-harness';
 export const inject = ['tools'];
 
-const USD_SCALE = 1.0;
+const USD_SCALE = 1_000_000; 
 const MAX_USD = Number.MAX_SAFE_INTEGER / USD_SCALE;
 
 
@@ -30,7 +30,7 @@ export const Config: z<Config> = z.object({
     secretDetection: z.boolean().default(true),
     sessionBudgetUsd: z.number().min(0).max(MAX_USD),
     defaultToolCostUsd: z.number().min(0).max(MAX_USD),
-    toolCostsUsd: z.dict(z.number().min(0)).max(MAX_USD).default({}),
+    toolCostsUsd: z.dict(z.number().min(0).max(MAX_USD)).default({}),
 })
 
 declare module "@deepseek-ai/cordis" {
