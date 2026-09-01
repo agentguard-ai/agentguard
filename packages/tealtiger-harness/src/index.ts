@@ -7,9 +7,36 @@ export const inject = ['tools'];
 
 const USD_SCALE = 1_000_000; 
 const MAX_USD = Number.MAX_SAFE_INTEGER / USD_SCALE;
+const TEEC_VERSION = '2.0.0';
 
 
 export type GovernanceMode = 'ENFORCE' | 'MONITOR' | 'REPORT_ONLY';
+
+export type GovernanceAction = 'ALLOW' | 'DENY';
+
+export interface TealTigerReceipt{
+    readonly teec_version: typeof TEEC_VERSION;
+    readonly event_type : 'tool/governance-decision';
+    readonly timestamp: string;
+    readonly correlation_id: string;
+    readonly agent_id: string;
+    readonly session_id: string;
+    readonly tool_name: string;
+    readonly action: GovernanceAction;
+    readonly mode: GovernanceMode;
+    readonly reason: string;
+    readonly reason_code: readonly string[];
+    readonly risk_score: number;
+    readonly policy_id: string;
+    readonly policy_version: string;
+    readonly component_versions: Readonly<Record<string, string>>;
+    readonly cost: Readonly<{
+        currency: 'USD';
+        estimated_call_usd?: number;
+        session_total_usd: number;
+        session_limit_usd?: number;
+    }>;
+}
 
 export interface Config{
     mode?: GovernanceMode;
@@ -36,6 +63,9 @@ export const Config: z<Config> = z.object({
 declare module "@deepseek-ai/cordis" {
     interface Context{
         tealtiger: TealTigerHarnessService;
+    }
+    interface Events {
+        'tealtiger/decision' (receipt: TealTigerReceipt): void;
     }
 }
 
