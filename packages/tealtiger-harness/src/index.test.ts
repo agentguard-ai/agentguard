@@ -29,7 +29,11 @@ vi.mock('tealtiger', () => ({
     },
 }));
 
-import { TealTigerHarnessService } from './index';
+ import {
+      apply,
+      TealTigerHarnessService,
+      type TealTigerReceipt,
+  } from './index';
 
 type TestGuard = (
     execution: Readonly<ToolExecution>,
@@ -255,6 +259,61 @@ describe('TealTigerHarnessService', () => {
                   defaultToolCostUsd: -0.01,
               }),
       ).toThrow();
+
+      await ctx.fiber.dispose();
+  });
+   it('creates immutable governance receipts', async () => {
+      const ctx = new Context();
+      new TestTools(ctx);
+
+      const service = new TealTigerHarnessService(ctx, {
+          mode: 'ENFORCE',
+          allowedTools: ['*'],
+      });
+
+      const receipt = await service.evaluateTool(
+          createExecution({ query: 'safe' }),
+      );
+
+      expect(Object.isFrozen(receipt)).toBe(true);
+      expect(Object.isFrozen(receipt.reason_code)).toBe(true);
+      expect(Object.isFrozen(receipt.component_versions)).toBe(true);
+      expect(Object.isFrozen(receipt.cost)).toBe(true);
+
+      await ctx.fiber.dispose();
+  });
+   it('emits a sanitized receipt before denying execution', async () => {
+      const ctx = new Context();
+      new TestTools(ctx);
+
+      const receipts: TealTigerReceipt[] = [];
+
+      ctx.on('tealtiger/decision', (receipt) => {
+          receipts.push(receipt);
+      });
+
+      apply(ctx, {
+          mode: 'ENFORCE',
+          allowedTools: ['*'],
+      });
+
+      const secret = 'sk-12345678901234567890';
+      const execution = createExecution({ apiKey: secret });
+
+      const decision = await ctx.waterfall(
+          ctx.tools,
+          'tools/pre-execute',
+          execution,
+          () => Promise.resolve({ kind: 'allow' as const }),
+      );
+
+      expect(decision.kind).toBe('deny');
+      expect(receipts).toHaveLength(1);
+      expect(receipts[0]?.action).toBe('DENY');
+      expect(receipts[0]?.reason_code).toContain('SECRET_DETECTED');
+
+      // Audit data must never contain the detected secret.
+      expect(JSON.stringify(receipts[0])).not.toContain(secret);
 
       await ctx.fiber.dispose();
   });
