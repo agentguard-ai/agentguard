@@ -1,7 +1,7 @@
 import { Service, type Context } from "@deepseek-ai/cordis";
 import z from "@deepseek-ai/schemastery";
 import type { PreToolDecision, ToolExecution } from "@deepseek-ai/dsh-tools";
-import { TealEngine } from 'tealtiger'
+import { PIIDetectionGuardrail, TealEngine } from 'tealtiger'
 import type { Decision, PolicyMode, TealPolicy } from 'tealtiger'
 
 export const name = 'tealtiger-harness';
@@ -10,6 +10,13 @@ export const inject = ['tools'];
 const USD_SCALE = 1_000_000;
 const MAX_USD = Number.MAX_SAFE_INTEGER / USD_SCALE;
 const TEEC_VERSION = '2.0.0';
+const SECRET_PATTERNS = [
+    /\bsk-[a-zA-Z0-9]{20,}\b/,
+    /\bghp_[a-zA-Z0-9]{36,}\b/,
+    /\bAKIA[0-9A-Z]{16}\b/,
+    /\bgsk_[a-zA-Z0-9]{20,}\b/,
+    /\bAIza[0-9A-Za-z_-]{35}\b/,
+] as const;
 
 
 export type GovernanceMode = 'ENFORCE' | 'MONITOR' | 'REPORT_ONLY';
@@ -122,6 +129,14 @@ function fromMicroUsd(value: number): number {
     return value / USD_SCALE;
 }
 
+function serializeArguments(value: unknown): string | undefined {
+    try {
+        return JSON.stringify(value) ?? '';
+    } catch {
+        return undefined;
+    }
+}
+
 function resolveConfig(input: Config): ResolvedConfig {
     const config = Config(input);
     if (config.sessionBudgetUsd !== undefined && config.defaultToolCostUsd === undefined) {
@@ -158,6 +173,10 @@ export class TealTigerHarnessService extends Service {
 
     public readonly engine: TealEngine;
 
+    private readonly piiGuardrail: PIIDetectionGuardrail;
+
+    private readonly deniedExecutions = new WeakMap<Readonly <ToolExecution>, string>();
+
     constructor(ctx: Context, input: Config = {}) {
         super(ctx, 'tealtiger');
 
@@ -173,8 +192,8 @@ export class TealTigerHarnessService extends Service {
             }
         })
 
-        ctx.tools.guard((execution) => {
-            return this.guardReason(execution);
+        this.piiGuardrail = new PIIDetectionGuardrail({
+            action: 'block'
         })
     }
 
@@ -185,7 +204,7 @@ export class TealTigerHarnessService extends Service {
         if (this.mode === 'ENFORCE' && !this.isAllowed(execution.name)) {
             return `Tool "${execution.name}" is not allowed in the current configuration.`;
         }
-        return undefined;
+        return this.deniedExecutions.get(execution);
     }
 
     public isFrozen(toolName: string): boolean {
@@ -202,10 +221,12 @@ export class TealTigerHarnessService extends Service {
         );
     }
 
-    public evaluateTool(
+    public async evaluateTool(
         execution: Readonly<ToolExecution>,
-    ): TealTigerReceipt {
-        const owner = execution.agent === undefined ? 'host' : String(execution.agent.id)
+    ): Promise<TealTigerReceipt> {
+        const owner =
+            execution.agent === undefined ? 'host' : String(execution.agent.id);
+
         const decision = this.engine.evaluateWithMode({
             agentId: owner,
             action: 'tool.execute',
@@ -213,12 +234,61 @@ export class TealTigerHarnessService extends Service {
         });
 
         const frozen = this.isFrozen(execution.name);
+        const reasonCodes = new Set<string>(decision.reason_codes);
+        let riskScore = decision.risk_score;
+        let scannerViolation = false;
 
-        const action: GovernanceAction = (!frozen && decision.action === 'ALLOW') ? 'ALLOW' : 'DENY';
+        if (!frozen && this.mode !== 'REPORT_ONLY') {
+            const argumentsText = serializeArguments(execution.arguments);
 
-        const reasonCodes = frozen ? [...decision.reason_codes, 'TOOL_FROZEN'] : decision.reason_codes;
+            if (argumentsText === undefined) {
+                reasonCodes.add('ARGUMENT_SERIALIZATION_FAILED');
+                riskScore = Math.max(riskScore, 90);
+                scannerViolation = true;
+            } else {
+                if (this.config.piiDetection) {
+                    const piiResult = await
+                        this.piiGuardrail.evaluate(argumentsText);
 
-        return Object.freeze({
+                    if (piiResult.shouldBlock()) {
+                        reasonCodes.add('PII_DETECTED');
+                        riskScore = Math.max(riskScore, piiResult.riskScore);
+                        scannerViolation = true;
+                    }
+                }
+
+                if (
+                    this.config.secretDetection &&
+                    SECRET_PATTERNS.some((pattern) => pattern.test(argumentsText))
+                ) {
+                    reasonCodes.add('SECRET_DETECTED');
+                    riskScore = Math.max(riskScore, 90);
+                    scannerViolation = true;
+                }
+            }
+        }
+
+        if (scannerViolation && this.mode === 'MONITOR') {
+            reasonCodes.add('MONITOR_MODE_VIOLATION');
+        }
+
+        const scannerDenied =
+            scannerViolation && this.mode === 'ENFORCE';
+
+        const action: GovernanceAction =
+            frozen || decision.action === 'DENY' || scannerDenied
+                ? 'DENY'
+                : 'ALLOW';
+
+        const reason = frozen
+            ? 'Tool blocked by immutable FREEZE policy'
+            : scannerDenied
+                ? 'Tool arguments blocked by sensitive-data policy'
+                : scannerViolation
+                    ? 'Tool argument policy violation observed'
+                    : decision.reason;
+
+        const receipt: TealTigerReceipt = Object.freeze({
             teec_version: TEEC_VERSION,
             event_type: 'tool/governance-decision',
             timestamp: new Date().toISOString(),
@@ -228,21 +298,32 @@ export class TealTigerHarnessService extends Service {
             tool_name: execution.name,
             action,
             mode: this.mode,
-            reason: frozen ? 'Tool blocked by immutable FREEZE policy' : decision.reason,
-            reason_code: Object.freeze(reasonCodes),
-            risk_score: frozen ? 100 : decision.risk_score,
+            reason,
+            reason_code: Object.freeze([...reasonCodes]),
+            risk_score: frozen ? 100 : riskScore,
             policy_id: decision.policy_id,
             policy_version: decision.policy_version,
-            component_versions: Object.freeze({ ...decision.component_versions }),
+            component_versions: Object.freeze({
+                ...decision.component_versions,
+            }),
             cost: Object.freeze({
                 currency: 'USD',
                 session_total_usd: 0,
-                ...(this.config.sessionBudgetMicroUsd === undefined ? {} : {
-                    session_limit_usd: fromMicroUsd(this.config.sessionBudgetMicroUsd)
-                })
-            })
-        })
+                ...(this.config.sessionBudgetMicroUsd === undefined
+                    ? {}
+                    : {
+                        session_limit_usd: fromMicroUsd(
+                            this.config.sessionBudgetMicroUsd,
+                        ),
+                    }),
+            }),
+        });
 
+        if (receipt.action === 'DENY') {
+            this.deniedExecutions.set(execution, receipt.reason);
+        }
+
+        return receipt;
     }
 }
 
@@ -255,7 +336,7 @@ export function apply(
     ctx.on(
         'tools/pre-execute',
         async (execution, next): Promise<PreToolDecision> => {
-            const receipt = service.evaluateTool(execution);
+            const receipt = await service.evaluateTool(execution);
 
             ctx.emit('tealtiger/decision', receipt);
 
