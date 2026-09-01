@@ -1,13 +1,13 @@
-import {Service, type Context} from "@deepseek-ai/cordis";
+import { Service, type Context } from "@deepseek-ai/cordis";
 import z from "@deepseek-ai/schemastery";
-import type {ToolExecution} from "@deepseek-ai/dsh-tools";
-import {TealEngine} from 'tealtiger'
-import type {PolicyMode, TealPolicy} from 'tealtiger'
+import type { PreToolDecision, ToolExecution } from "@deepseek-ai/dsh-tools";
+import { TealEngine } from 'tealtiger'
+import type { Decision, PolicyMode, TealPolicy } from 'tealtiger'
 
 export const name = 'tealtiger-harness';
 export const inject = ['tools'];
 
-const USD_SCALE = 1_000_000; 
+const USD_SCALE = 1_000_000;
 const MAX_USD = Number.MAX_SAFE_INTEGER / USD_SCALE;
 const TEEC_VERSION = '2.0.0';
 
@@ -16,9 +16,9 @@ export type GovernanceMode = 'ENFORCE' | 'MONITOR' | 'REPORT_ONLY';
 
 export type GovernanceAction = 'ALLOW' | 'DENY';
 
-export interface TealTigerReceipt{
+export interface TealTigerReceipt {
     readonly teec_version: typeof TEEC_VERSION;
-    readonly event_type : 'tool/governance-decision';
+    readonly event_type: 'tool/governance-decision';
     readonly timestamp: string;
     readonly correlation_id: string;
     readonly agent_id: string;
@@ -31,7 +31,7 @@ export interface TealTigerReceipt{
     readonly risk_score: number;
     readonly policy_id: string;
     readonly policy_version: string;
-    readonly component_versions: Readonly<Record<string, string>>;
+    readonly component_versions: Readonly<Decision['component_versions']>;
     readonly cost: Readonly<{
         currency: 'USD';
         estimated_call_usd?: number;
@@ -40,7 +40,7 @@ export interface TealTigerReceipt{
     }>;
 }
 
-export interface Config{
+export interface Config {
     mode?: GovernanceMode;
     allowedTools?: string[];
     frozenTools?: string[];
@@ -63,23 +63,23 @@ export const Config: z<Config> = z.object({
 })
 
 declare module "@deepseek-ai/cordis" {
-    interface Context{
+    interface Context {
         tealtiger: TealTigerHarnessService;
     }
     interface Events {
-        'tealtiger/decision' (receipt: TealTigerReceipt): void;
+        'tealtiger/decision'(receipt: TealTigerReceipt): void;
     }
 }
 
 function normalizeToolNames(values: readonly string[], fieldName: string): ReadonlySet<string> {
     const names = new Set<string>();
-    for(const value of values){
+    for (const value of values) {
         const name = value.trim();
 
-        if (name.length === 0){
+        if (name.length === 0) {
             throw new Error(`Invalid ${fieldName}: tool name cannot be empty`);
         }
-        if(names.has(name)){
+        if (names.has(name)) {
             throw new Error(`Invalid ${fieldName}: duplicate tool name "${name}"`);
         }
         names.add(name);
@@ -87,7 +87,7 @@ function normalizeToolNames(values: readonly string[], fieldName: string): Reado
     return names;
 }
 
-interface ResolvedConfig{
+interface ResolvedConfig {
     readonly mode: GovernanceMode;
     readonly allowedTools: ReadonlySet<string>;
     readonly frozenTools: ReadonlySet<string>;
@@ -98,33 +98,37 @@ interface ResolvedConfig{
     readonly toolCostsMicroUsd: ReadonlyMap<string, number>;
 }
 
-function createToolPolicy(config:ResolvedConfig): TealPolicy{
+function createToolPolicy(config: ResolvedConfig): TealPolicy {
     const tools: NonNullable<TealPolicy['tools']> = {};
-    for(const toolName of config.allowedTools){
+    for (const toolName of config.allowedTools) {
         tools[toolName] = {
             allowed: true,
         }
     }
 
-    for(const toolName of config.allowedTools)[
+    for (const toolName of config.frozenTools) {
         tools[toolName] = {
             allowed: false,
         }
-    ]
-    return {tools}
+    }
+    return { tools }
 }
 
 function toMicroUsd(value: number): number {
     return Math.round(value * USD_SCALE);
 }
 
-function resolveConfig(input:Config): ResolvedConfig {
+function fromMicroUsd(value: number): number {
+    return value / USD_SCALE;
+}
+
+function resolveConfig(input: Config): ResolvedConfig {
     const config = Config(input);
-    if(config.sessionBudgetUsd !== undefined && config.defaultToolCostUsd === undefined){
+    if (config.sessionBudgetUsd !== undefined && config.defaultToolCostUsd === undefined) {
         throw new Error("defaultToolCostUsd is required when sessionBudgetUsd is configured");
     }
     const toolCosts = new Map<string, number>();
-    
+
     for (const [rawName, cost] of Object.entries(config.toolCostsUsd ?? {})) {
         const name = rawName.trim();
         if (name.length === 0) {
@@ -148,7 +152,7 @@ function resolveConfig(input:Config): ResolvedConfig {
 }
 
 export class TealTigerHarnessService extends Service {
-    public readonly mode : GovernanceMode;
+    public readonly mode: GovernanceMode;
 
     private readonly config: ResolvedConfig;
 
@@ -159,47 +163,113 @@ export class TealTigerHarnessService extends Service {
 
         this.config = resolveConfig(input);
         this.mode = this.config.mode;
-        ctx.tools.guard((execution)=>{
+        ctx.tools.guard((execution) => {
             return this.guardReason(execution);
         })
         this.engine = new TealEngine(
-            createToolPolicy(this.config),{
-                mode: {
-                    default: this.mode as PolicyMode,
-                }
+            createToolPolicy(this.config), {
+            mode: {
+                default: this.mode as PolicyMode,
+            }
         })
 
-        ctx.tools.guard((execution)=>{
+        ctx.tools.guard((execution) => {
             return this.guardReason(execution);
         })
     }
 
     private guardReason(execution: Readonly<ToolExecution>): string | undefined {
-        if(this.isFrozen(execution.name)){
+        if (this.isFrozen(execution.name)) {
             return `Tool "${execution.name}" is frozen and cannot be used.`;
         }
-        if(this.mode === 'ENFORCE' && !this.isAllowed(execution.name)){
+        if (this.mode === 'ENFORCE' && !this.isAllowed(execution.name)) {
             return `Tool "${execution.name}" is not allowed in the current configuration.`;
         }
         return undefined;
     }
-    
+
     public isFrozen(toolName: string): boolean {
         return this.config.frozenTools.has(toolName);
     }
 
     public isAllowed(toolName: string): boolean {
-        if(this.isFrozen(toolName)){
+        if (this.isFrozen(toolName)) {
             return false;
         }
-        
-        return(
+
+        return (
             this.config.allowedTools.has('*') || this.config.allowedTools.has(toolName)
         );
     }
+
+    public evaluateTool(
+        execution: Readonly<ToolExecution>,
+    ): TealTigerReceipt {
+        const owner = execution.agent === undefined ? 'host' : String(execution.agent.id)
+        const decision = this.engine.evaluateWithMode({
+            agentId: owner,
+            action: 'tool.execute',
+            tool: execution.name,
+        });
+
+        const frozen = this.isFrozen(execution.name);
+
+        const action: GovernanceAction = (!frozen && decision.action === 'ALLOW') ? 'ALLOW' : 'DENY';
+
+        const reasonCodes = frozen ? [...decision.reason_codes, 'TOOL_FROZEN'] : decision.reason_codes;
+
+        return Object.freeze({
+            teec_version: TEEC_VERSION,
+            event_type: 'tool/governance-decision',
+            timestamp: new Date().toISOString(),
+            correlation_id: String(execution.callId),
+            agent_id: owner,
+            session_id: owner,
+            tool_name: execution.name,
+            action,
+            mode: this.mode,
+            reason: frozen ? 'Tool blocked by immutable FREEZE policy' : decision.reason,
+            reason_code: Object.freeze(reasonCodes),
+            risk_score: frozen ? 100 : decision.risk_score,
+            policy_id: decision.policy_id,
+            policy_version: decision.policy_version,
+            component_versions: Object.freeze({ ...decision.component_versions }),
+            cost: Object.freeze({
+                currency: 'USD',
+                session_total_usd: 0,
+                ...(this.config.sessionBudgetMicroUsd === undefined ? {} : {
+                    session_limit_usd: fromMicroUsd(this.config.sessionBudgetMicroUsd)
+                })
+            })
+        })
+
+    }
 }
 
-export function apply(ctx: Context, config: Config = {}): void{
-    new TealTigerHarnessService(ctx, config);
-}
+export function apply(
+    ctx: Context,
+    config: Config = {},
+): void {
+    const service = new TealTigerHarnessService(ctx, config);
 
+    ctx.on(
+        'tools/pre-execute',
+        async (execution, next): Promise<PreToolDecision> => {
+            const receipt = service.evaluateTool(execution);
+
+            ctx.emit('tealtiger/decision', receipt);
+
+            if (receipt.action === 'DENY') {
+                return {
+                    kind: 'deny',
+                    reason: receipt.reason,
+                };
+            }
+
+            return next();
+        },
+        {
+            prepend: true,
+        },
+    );
+}
