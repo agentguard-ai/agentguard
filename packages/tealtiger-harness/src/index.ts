@@ -1,6 +1,8 @@
 import {Service, type Context} from "@deepseek-ai/cordis";
 import z from "@deepseek-ai/schemastery";
 import type {ToolExecution} from "@deepseek-ai/dsh-tools";
+import {TealEngine} from 'tealtiger'
+import type {PolicyMode, TealPolicy} from 'tealtiger'
 
 export const name = 'tealtiger-harness';
 export const inject = ['tools'];
@@ -96,6 +98,22 @@ interface ResolvedConfig{
     readonly toolCostsMicroUsd: ReadonlyMap<string, number>;
 }
 
+function createToolPolicy(config:ResolvedConfig): TealPolicy{
+    const tools: NonNullable<TealPolicy['tools']> = {};
+    for(const toolName of config.allowedTools){
+        tools[toolName] = {
+            allowed: true,
+        }
+    }
+
+    for(const toolName of config.allowedTools)[
+        tools[toolName] = {
+            allowed: false,
+        }
+    ]
+    return {tools}
+}
+
 function toMicroUsd(value: number): number {
     return Math.round(value * USD_SCALE);
 }
@@ -134,11 +152,23 @@ export class TealTigerHarnessService extends Service {
 
     private readonly config: ResolvedConfig;
 
+    public readonly engine: TealEngine;
+
     constructor(ctx: Context, input: Config = {}) {
         super(ctx, 'tealtiger');
 
         this.config = resolveConfig(input);
         this.mode = this.config.mode;
+        ctx.tools.guard((execution)=>{
+            return this.guardReason(execution);
+        })
+        this.engine = new TealEngine(
+            createToolPolicy(this.config),{
+                mode: {
+                    default: this.mode as PolicyMode,
+                }
+        })
+
         ctx.tools.guard((execution)=>{
             return this.guardReason(execution);
         })
