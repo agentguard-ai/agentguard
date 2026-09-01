@@ -1,5 +1,6 @@
 import {Service, type Context} from "@deepseek-ai/cordis";
 import z from "@deepseek-ai/schemastery";
+import type {ToolExecution} from "@deepseek-ai/dsh-tools";
 
 export const name = 'tealtiger-harness';
 export const inject = ['tools'];
@@ -108,6 +109,19 @@ export class TealTigerHarnessService extends Service {
 
         this.config = resolveConfig(input);
         this.mode = this.config.mode;
+        ctx.tools.guard((execution)=>{
+            return this.guardReason(execution);
+        })
+    }
+
+    private guardReason(execution: Readonly<ToolExecution>): string | undefined {
+        if(this.isFrozen(execution.name)){
+            return `Tool "${execution.name}" is frozen and cannot be used.`;
+        }
+        if(this.mode === 'ENFORCE' && !this.isAllowed(execution.name)){
+            return `Tool "${execution.name}" is not allowed in the current configuration.`;
+        }
+        return undefined;
     }
     
     public isFrozen(toolName: string): boolean {
@@ -128,3 +142,4 @@ export class TealTigerHarnessService extends Service {
 export function apply(ctx: Context, config: Config = {}): void{
     new TealTigerHarnessService(ctx, config);
 }
+
