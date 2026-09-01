@@ -316,4 +316,66 @@ describe('TealTigerHarnessService', () => {
 
         await ctx.fiber.dispose();
     });
+    it('denies frozen tools in every governance mode', async () => {
+      for (const mode of [
+          'ENFORCE',
+          'MONITOR',
+          'REPORT_ONLY',
+      ] as const) {
+          const ctx = new Context();
+          const tools = new TestTools(ctx);
+
+          const service = new TealTigerHarnessService(ctx, {
+              mode,
+              allowedTools: ['*'],
+              frozenTools: ['search'],
+          });
+
+          const execution = createExecution({ query: 'safe' });
+          const receipt = await service.evaluateTool(execution);
+
+          expect(receipt.action).toBe('DENY');
+          expect(receipt.reason_code).toContain('TOOL_FROZEN');
+          expect(receipt.risk_score).toBe(100);
+          expect(tools.guardCallback?.(execution)).toBe(receipt.reason);
+
+          await ctx.fiber.dispose();
+      }
+  });
+  it('denies tools outside the ENFORCE allowlist', async () => {
+      const ctx = new Context();
+      const tools = new TestTools(ctx);
+
+      const service = new TealTigerHarnessService(ctx, {
+          mode: 'ENFORCE',
+          allowedTools: ['read_file'],
+      });
+
+      const execution = createExecution({ query: 'safe' });
+      const receipt = await service.evaluateTool(execution);
+
+      expect(receipt.action).toBe('DENY');
+      expect(receipt.reason_code).toContain('TOOL_NOT_ALLOWED');
+      expect(tools.guardCallback?.(execution)).toBe(receipt.reason);
+
+      await ctx.fiber.dispose();
+  });
+   it('allows a configured tool with safe arguments', async () => {
+      const ctx = new Context();
+      const tools = new TestTools(ctx);
+
+      const service = new TealTigerHarnessService(ctx, {
+          mode: 'ENFORCE',
+          allowedTools: ['search'],
+      });
+
+      const execution = createExecution({ query: 'safe' });
+      const receipt = await service.evaluateTool(execution);
+
+      expect(receipt.action).toBe('ALLOW');
+      expect(receipt.reason_code).not.toContain('TOOL_NOT_ALLOWED');
+      expect(tools.guardCallback?.(execution)).toBeUndefined();
+
+      await ctx.fiber.dispose();
+  });
 });

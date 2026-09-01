@@ -137,6 +137,14 @@ function serializeArguments(value: unknown): string | undefined {
     }
 }
 
+function frozenToolReason(toolName: string): string {
+    return `Tool "${toolName}" is frozen and cannot be used.`;
+}
+
+function disallowedToolReason(toolName: string): string {
+    return `Tool "${toolName}" is not allowed in the current configuration.`;
+}
+
 function resolveConfig(input: Config): ResolvedConfig {
     const config = Config(input);
     if (config.sessionBudgetUsd !== undefined && config.defaultToolCostUsd === undefined) {
@@ -201,10 +209,10 @@ export class TealTigerHarnessService extends Service {
 
     private guardReason(execution: Readonly<ToolExecution>): string | undefined {
         if (this.isFrozen(execution.name)) {
-            return `Tool "${execution.name}" is frozen and cannot be used.`;
+            return frozenToolReason(execution.name);
         }
         if (this.mode === 'ENFORCE' && !this.isAllowed(execution.name)) {
-            return `Tool "${execution.name}" is not allowed in the current configuration.`;
+            return disallowedToolReason(execution.name);
         }
         return this.deniedExecutions.get(execution);
     }
@@ -241,8 +249,21 @@ export class TealTigerHarnessService extends Service {
 
         const frozen = this.isFrozen(execution.name);
         const reasonCodes = new Set<string>(decision.reason_codes);
+        if (frozen) {
+            reasonCodes.add('TOOL_FROZEN');
+        }
         let riskScore = decision.risk_score;
         let scannerViolation = false;
+
+        const allowlistViolation =
+            this.mode !== 'REPORT_ONLY' &&
+            !frozen &&
+            !this.isAllowed(execution.name);
+
+        if (allowlistViolation) {
+            reasonCodes.add('TOOL_NOT_ALLOWED');
+            riskScore = Math.max(riskScore, 100);
+        }
 
         if (!frozen && this.mode !== 'REPORT_ONLY') {
             const argumentsText = serializeArguments(execution.arguments);
@@ -274,11 +295,9 @@ export class TealTigerHarnessService extends Service {
             }
         }
 
-        const estimatedCallCostMicroUsd =
-            this.toolCostMicroUsd(execution.name);
+        const estimatedCallCostMicroUsd = this.toolCostMicroUsd(execution.name);
 
-        const currentSessionCostMicroUsd =
-            this.sessionCostsMicroUsd.get(owner) ?? 0;
+        const currentSessionCostMicroUsd = this.sessionCostsMicroUsd.get(owner) ?? 0;
 
         const projectedSessionCostMicroUsd = Math.min(
             Number.MAX_SAFE_INTEGER,
@@ -295,33 +314,36 @@ export class TealTigerHarnessService extends Service {
         }
 
         if (
-            (scannerViolation || budgetExceeded) &&
+            (allowlistViolation || scannerViolation || budgetExceeded) &&
             this.mode === 'MONITOR'
         ) {
             reasonCodes.add('MONITOR_MODE_VIOLATION');
         }
 
-        const scannerDenied =
-            scannerViolation && this.mode === 'ENFORCE';
+        const scannerDenied = scannerViolation && this.mode === 'ENFORCE';
+
+        const allowlistDenied = allowlistViolation && this.mode === 'ENFORCE';
 
         const budgetDenied = budgetExceeded && this.mode === 'ENFORCE';
 
-        const action: GovernanceAction =
-            frozen || decision.action === 'DENY' || scannerDenied || budgetDenied
-                ? 'DENY'
-                : 'ALLOW';
+        const action: GovernanceAction = frozen || decision.action === 'DENY' || allowlistDenied || scannerDenied ||
+            budgetDenied
+            ? 'DENY'
+            : 'ALLOW';
 
         const reason = frozen
-            ? 'Tool blocked by immutable FREEZE policy'
-            : scannerDenied
-                ? 'Tool blocked by sensitive-data policy'
-                : budgetDenied
-                    ? 'Tool blocked because the session budget would be exceeded'
-                    : scannerViolation
-                        ? 'Tool argument policy violation detected in MONITOR '
-                        : budgetExceeded
-                            ? 'Session budget limit exceeded'
-                            : decision.reason;
+            ? frozenToolReason(execution.name)
+            : allowlistDenied
+                ? disallowedToolReason(execution.name)
+                : scannerDenied
+                    ? 'Tool blocked by sensitive-data policy'
+                    : budgetDenied
+                        ? 'Tool blocked because the session budget would be exceeded'
+                        : scannerViolation
+                            ? 'Tool argument policy violation detected in MONITOR '
+                            : budgetExceeded
+                                ? 'Session budget limit exceeded'
+                                : decision.reason;
 
         let sessionTotalMicroUsd = currentSessionCostMicroUsd;
 
