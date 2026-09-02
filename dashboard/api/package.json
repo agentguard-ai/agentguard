@@ -16,9 +16,9 @@
     "@fastify/websocket": "^11.0.2",
     "@libsql/client": "^0.17.3",
     "drizzle-orm": "^0.45.2",
-    "fastify": "^5.8.5",
+    "fastify": "^5.12.1",
     "node-cron": "^4.6.0",
-    "uuid": "^14.0.1",
+    "uuid": "^14.0.2",
     "ws": "^8.18.3",
     "zod": "^4.4.3"
   },
