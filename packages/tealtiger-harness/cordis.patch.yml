@@ -1,0 +1,7 @@
+# Install TealTiger governance on the Harness host plane.
+- insert:
+    - id: tealtiger-harness
+      name: tealtiger-harness
+      config:
+        mode: ENFORCE
+        allowedTools: []
